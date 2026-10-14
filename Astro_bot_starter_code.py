@@ -2,16 +2,19 @@
 #IT IS MANDATORY TO USE THE RESOURCE PROVIDED
 #The starter code is structured into functions and modules. You are required to complete the missing sections while maintaining this modular design.  Further step by step instructions can be found in the appendix A of this assignment brief. 
 #For extended features implement it within the existing modular structure. The new feature must be triggered using a new command (e.g., /stars, /moon, /sky) and follow the same approach 
-#Use Git for version control. Maintain a repository on GitHub to track your project’s progress and changes. Ensure regular commits for each step with meaningful messages that document your step by stepdevelopment process. 
-
+#Use Git for version control. Maintain a repository on GitHub to track your project’s progress and changes. Ensure regular commits for each step with meaningful messages that document your step by stepdevelopment process.
 # =========================
 # REQUIRED LIBRARIES
 # =========================
 
-import #complete the import statement to include the requests library
-import #complete the import statement to include the json library
-import #complete the import statement to include the time library
-from #complete the import statement to include the datetime library
+import requests
+import json
+import time
+from datetime import datetime
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 # =========================
 # CONFIGURATION FUNCTIONS
@@ -25,17 +28,26 @@ def get_webex_token():
         return "Bearer YOUR_WEBEX_TOKEN"
 
 def get_api_key(prompt, hardcoded_key):
-  #complete the function to get the API key from user input or use a hardcoded key
+    choice = input(f"Use hard-coded {prompt} token? (y/n): ").lower()
+    if choice == "n":
+        api_key = input(f"Enter your {prompt}: ")
+        return f"Bearer {api_key}"
+    else:
+        return f"Bearer {os.getenv("API_KEY")}"
 
 # =========================
 # WEBEX FUNCTIONS
 # =========================
 def get_rooms(token):
-    url = #complete the URL to fetch rooms from Webex API
-    headers = #complete the headers dictionary to include the Authorization header with the token
-    response = #complete the request to get rooms using requests.get with the url and headers
+    url = "https://webexapis.com/v1/rooms"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/json"
+    }
+    response = requests.get(url,headers)
+    print(response)
 
-    if response.status_code != #complete the condition to check if the response status code is not xxx:
+    if response.status_code != 200:
         print("Error fetching rooms:", response.status_code)
         return []
 
@@ -44,17 +56,17 @@ def get_rooms(token):
 
 def print_rooms(rooms):
     for room in rooms:
-        print(#complete the print statement to display the room title and id)
+        print(room["id"], room["title"])
 
 
 def select_room(rooms):
     while True:
-        name = input(#complete the input prompt to ask the user for the room name)
+        name = input("Enter room name: ")
         for room in rooms:
             if name.lower() in room["title"].lower():
-                print(#complete the print statement to confirm the selected room)
+                print(f"selected room is {room["title"]}")
                 return room["id"]
-        print(#complete the print statement to indicate that the room was not found)
+        print("Selected room not found")
 
 
 def get_latest_message(token, room_id):

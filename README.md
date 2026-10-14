@@ -9,25 +9,33 @@ This investigation sheet helps you gather key technical information from the thr
 
 ##  Webex Messaging API (4 marks)
 
-| Criteria | Details |
-|---------|---------|
-| API Base URL | `_______________________________` |
-| Authentication Method | `_______________________________` |
-| Endpoint to list rooms | `_______________________________` |
-| Endpoint to get messages | `_______________________________` |
-| Endpoint to send message | `_______________________________` |
-| Required headers | `_______________________________` |
-| Sample full GET or POST request | `_______________________________` |
+| Criteria                        | Details                                                                                                                     |
+|---------------------------------|-----------------------------------------------------------------------------------------------------------------------------|
+| API Base URL                    | `https://webexapis.com/v1/`                                                                                                 |
+| Authentication Method           | `BEARER TOKEN`                                                                                                              |
+| Endpoint to list rooms          | `/rooms`                                                                                                                    |
+| Endpoint to get messages        | `/messages?roomId=Y2lzY29zcGFyazovL3VybjpURUFNOmV1LWNlbnRyYWwtMV9rL1JPT00vYWU2YjgwYjAtYzIyNy0xMWYxLWJlYTYtYWYyOGU5ZDE3YjJm` |
+| Endpoint to send message        | `/messages`                                                                                                                 |
+| Required headers                | `BEARER TOKEN`                                                                                                              |
+| Sample full GET or POST request | `https://webexapis.com/v1/rooms`                                                                                            |
 
 ---
 
 ##  ISS Current Location API (2 marks)
 
-| Criteria | Details |
-|---------|---------|
-| API Base URL | `_______________________________` |
-| Endpoint for current ISS location | `_______________________________` |
-| Sample response format (example JSON) |  
+| Criteria                              | Details                        |
+|---------------------------------------|--------------------------------|
+| API Base URL                          | `	http://api.open-notify.org/` |
+| Endpoint for current ISS location     | `GET /iss-now.json`            |
+| Sample response format (example JSON) | '{                             
+
+    "message": "success",
+    "timestamp": 1791362217,
+    "iss_position": {
+        "longitude": "72.3341",
+        "latitude": "49.0602"
+    }
+}'
 ```
 
 ```
@@ -37,16 +45,18 @@ This investigation sheet helps you gather key technical information from the thr
 
 ##  Geocoding API (4 marks)
 
-| Criteria | Details |
-|---------|---------|
-| Provider used (Choose one) | **LocationIQ / Mapbox/ OpenWeatherMap other -provide detail** |
-| API Base URL | `_______________________________` |
-| Endpoint for geocoding | `_______________________________` |
-| Endpoint for reverse geocoding | `_______________________________` |
-| Authentication method | `_______________________________` |
-| Required query parameters | `_______________________________` |
-| Sample request with latitude/longitude | `_______________________________` |
-| Sample JSON response (formatted example) |  
+| Criteria                                 | Details                                                                                                    |
+|------------------------------------------|------------------------------------------------------------------------------------------------------------|
+| Provider used (Choose one)               | **LocationIQ**                                                                                             |
+| API Base URL                             | `https://us1.locationiq.com/v1/`                                                                           |
+| Endpoint for geocoding                   | `/search`                                                                                                  |
+| Endpoint for reverse geocoding           | `/reverse`                                                                                                 |
+| Authentication method                    | `API Key`                                                                                                  |
+| Required query parameters                | `key, q, format=json`                                                                                      |
+| Sample request with latitude/longitude   | `GET https://us1.locationiq.com/v1/reverse?key=YOUR_ACCESS_TOKEN&lat=51.5233879&lon=-0.1582367&format=json |
+| Sample JSON response	See below`          |                                                                                                            |
+| Sample JSON response (formatted example) |                                                                                                            |
+
 ```
 
 ```
