@@ -27,7 +27,7 @@ This investigation sheet helps you gather key technical information from the thr
 |---------------------------------------|--------------------------------|
 | API Base URL                          | `	http://api.open-notify.org/` |
 | Endpoint for current ISS location     | `GET /iss-now.json`            |
-| Sample response format (example JSON) | '{                             
+| Sample response format (example JSON) | '{                             |
 
     "message": "success",
     "timestamp": 1791362217,
@@ -84,10 +84,10 @@ This investigation sheet helps you gather key technical information from the thr
 
 ##  Epoch to Human Time Conversion (Python time module) (2 marks)
 
-| Criteria | Details |
-|---------|---------|
-| Library used | `_______________________________` |
-| Function used to convert epoch | `_______________________________` |
+| Criteria                         | Details                           |
+|----------------------------------|-----------------------------------|
+| Library used                     | `_______________________________` |
+| Function used to convert epoch   | `_______________________________` |
 | Sample code to convert timestamp |  
 ```  
 ```
@@ -98,13 +98,13 @@ This investigation sheet helps you gather key technical information from the thr
 
 ##  Extended Feature API ( 3 marks)
 
-| Criteria | Details |
-|---------|---------|
-| API Provider | '_________' |
-| API Base URL | `_______________________________` |
-| Endpoint | `_______________________________` |
-| Authentication method | `_______________________________` |
-| Required query parameters | `_______________________________` |
+| Criteria                                 | Details                           |
+|------------------------------------------|-----------------------------------|
+| API Provider                             | '_________'                       |
+| API Base URL                             | `_______________________________` |
+| Endpoint                                 | `_______________________________` |
+| Authentication method                    | `_______________________________` |
+| Required query parameters                | `_______________________________` |
 | Sample JSON response (formatted example) |  
 ```
 
@@ -155,11 +155,11 @@ Note: Relate your explanation directly to your code for higher grade.
 Explain how the **Model–View–Controller (MVC)** pattern applies to your solution:
 Provide a short example based on your implementation
 
-| Component   | Description and Example (Relate to your Bot) |
-|------------|----------------------------------|
-| **Model**  |  |
-| **View**   |  |
-| **Controller** |  |
+| Component      | Description and Example (Relate to your Bot) |
+|----------------|----------------------------------------------|
+| **Model**      |                                              |
+| **View**       |                                              |
+| **Controller** |                                              |
 
 ---
 
@@ -181,6 +181,7 @@ Reflect on your AstroBot (400 words):
 - Use official documentation for accuracy (e.g. developer.webex.com, locationiq.com or Mapbox, open-notify.org or other ISS API).
 - Be prepared to explain your findings to your instructor or demo how you retrieved them using tools like Postman, Curl, or Python scripts.
 
+/weather <'city'>
 ---
 
 ###  Total: /40

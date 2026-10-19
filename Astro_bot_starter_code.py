@@ -44,7 +44,7 @@ def get_rooms(token):
         "Authorization": f"Bearer {token}",
         "Accept": "application/json"
     }
-    response = requests.get(url,headers)
+    response = requests.get(url,headers=headers)
     print(response)
 
     if response.status_code != 200:
@@ -70,11 +70,14 @@ def select_room(rooms):
 
 
 def get_latest_message(token, room_id):
-    url = #complete the URL to fetch messages from Webex API
-    params = {"roomId":#complete, "max": #complete}
-    headers = #complete the headers dictionary to include the Authorization header with the token
+    url = 'https://webexapis.com/v1/messages'
+    params = {"roomId":room_id, "max": 1}
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/json"
+    }
 
-    response = requests.#complete(#complete, headers=headers, params=params)
+    response = requests.get(url, params=params, headers=headers)
 
     if response.status_code != 200:
         return None, None
