@@ -71,10 +71,10 @@ def select_room(rooms):
 
 def get_latest_message(token, room_id):
     url = 'https://webexapis.com/v1/messages'
-    params = {"roomId":room_id, "max": 1}
+    params = {"roomId":room_id, "max": 1, "mentionedPeople": "me"}
     headers = {
         "Authorization": f"Bearer {token}",
-        "Accept": "application/json"
+        "Accept": "application/json",
     }
 
     response = requests.get(url, params=params, headers=headers)
@@ -260,30 +260,30 @@ def main():
 
             print(message_text)
 
-            if not message_text.startswith('/'):
+            if not message_text.lower().startswith('astro /'):
                 continue
 
-            if message_text.lower() == "/help":
+            if message_text.lower() == "astro /help":
                 send_message(
                     token,
                     room_id,
                     "/weather <city>\n/iss\n/help\n/quit"
                 )
 
-            elif message_text.lower().startswith('/weather'):
+            elif message_text.lower().startswith('astro /weather'):
 
-                parts = message_text.split(maxsplit=1)
+                parts = message_text.split(maxsplit=2)
 
-                if len(parts) < 2:
+                if len(parts) < 3:
                     send_message(token, room_id, "Usage: /weather <city>")
                 else:
-                    city = parts[1]
+                    city = parts[2]
                     send_message(token, room_id, get_weather(city, weather_key))
 
-            elif message_text.lower() == "/iss":
+            elif message_text.lower() == "astro /iss":
                 send_message(token, room_id, get_iss_location(weather_key))
 
-            elif message_text.lower() == "/quit":
+            elif message_text.lower() == "astro /quit":
                 send_message(token, room_id, "AstroBot shutting down.")
                 break
 
