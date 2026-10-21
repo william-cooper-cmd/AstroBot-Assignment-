@@ -23,17 +23,17 @@ def get_webex_token():
     choice = input("Use hard-coded Webex token? (y/n): ").lower()
     if choice == "n":
         token = input("Enter your Webex Access Token: ")
-        return {token}
+        return token
     else:
-        return "Bearer YOUR_WEBEX_TOKEN"
+        return os.getenv("WEBEX_TOKEN")
 
 def get_api_key(prompt, hardcoded_key):
     choice = input(f"Use hard-coded {prompt}? (y/n): ").lower()
     if choice == "n":
         api_key = input(f"Enter your {prompt}: ")
-        return f"Bearer {api_key}"
+        return api_key
     else:
-        return {os.getenv('API_KEY')}
+        return hardcoded_key
 
 # =========================
 # WEBEX FUNCTIONS
@@ -142,13 +142,7 @@ def get_weather(city, api_key):
 
     weather = response.json()
 
-    return (
-        f"Current weather in {city}, {weather['sys']['country']}: "
-        f"{weather['main']['temp']}°C, {weather['weather'][0]['description']} | "
-        f"humidity: {weather['main']['humidity']}%, "
-        f"wind speed: {weather['wind']['speed']} m/s. "
-        f"{'Good for stargazing' if weather['clouds']['all'] <= 15 and weather['visibility'] >= 10000 and weather['main']['humidity'] < 60 and weather['wind']['speed'] < 5 else 'Not good for stargazing'}"
-    )
+    return format_weather(weather, city)
 
 # =========================
 # ISS FUNCTIONS
@@ -191,11 +185,46 @@ def get_iss_location(api_key):
     if location:
         place = location['name']
 
+    weather_info = get_weather_by_coords(lat, lon, api_key, place)
+    return f"ISS Position (Lat: {lat}, Lon: {lon}) at {datetime.now().astimezone().strftime("%Z")   }:\n{weather_info}"
+
+def get_weather_by_coords(lat, lon, api_key, location_name=None):
+    url = 'https://api.openweathermap.org/data/2.5/weather'
+    params = {
+        "lat": lat,
+        "lon": lon,
+        "units": 'metric',
+        "appid": api_key
+    }
+
+    response = requests.get(url, params=params)
+
+    if response.status_code != 200:
+        return f"Failed to get weather for coordinates ({lat}, {lon})"
+
+    weather = response.json()
+    return format_weather(weather, location_name)
+
+
+def format_weather(weather, location_name=None):
+    """Formats the raw weather JSON data into a readable string."""
+    country = weather.get('sys', {}).get('country', '')
+    prefix = f"Current weather in {location_name}, {country}: " if location_name else f"Current weather: "
+
+    is_good_stargazing = (
+        weather['clouds']['all'] <= 15 and
+        weather['visibility'] >= 10000 and
+        weather['main']['humidity'] < 60 and
+        weather['wind']['speed'] < 5
+    )
+    stargazing_status = "Good for stargazing" if is_good_stargazing else "Not good for stargazing"
+
     return (
-        f"latitude: {lat} "
-        f"longitude: {lon} "
-        f"place: {place}"
-        f"time: {datetime.fromtimestamp(data['timestamp'])}"
+        f"{prefix}"
+        f"{weather['main']['temp']}°C, {weather['weather'][0]['description']} | "
+        f"humidity: {weather['main']['humidity']}%, "
+        f"wind speed: {weather['wind']['speed']} m/s. "
+        f"{stargazing_status}"
     )
 
 # =========================
@@ -207,7 +236,7 @@ def main():
 
     weather_key = get_api_key(
         "Weather API key",
-        "YOUR_OPENWEATHER_API_KEY"
+        os.getenv("API_KEY")
     )
 
     rooms = get_rooms(token)
