@@ -348,13 +348,13 @@ except requests.RequestException:
 
 ### 📝 Reflection and Evaluation ( 8 marks )
 
-Reflect on your AstroBot (400 words):
+AstroBot meets the club's core needs. A member can ask for the weather in any city, see where the ISS is with the weather beneah it, and check upcoming laucnhes, all inside the Webex space they already use. The startgazing check is a simple, but it turns rawdata into an answer a member can act on. The extended `/launch` command gives member something to look forward to.
 
-- How effective is your bot in meeting the Astronomy Club’s needs?  
-- What design decisions worked well?  
-- What challenges did you face when integrating APIs?  
-- What security risks did you identify and how were they handled?  
-- How could your solution be improved in the future?  
+Splitting the code into small functions worked well. Each API has its own fetch function and formating is kept arpart, so i could fix and test one section without breaking the others. Adding `/launch` took one function, one `elif` branch and one help line,m  which shows the strucuture is easy to extend.
+
+The main securtyrisks were exposed credentials, rate limits. Keys live in a `.env` file excluded from Git, request use timoute and status checks, resutls are cached and commands are matched against a fixed list so unknown input only produces a unknown command message.
+
+Getting the latest message could use a Webex webhook instead of polling, which avoids missed messages when two commands arrive within five seconds. I would split the code into sperate modew, view and controller modules, add unit tests with mocked API responses.
 
 ---
 
