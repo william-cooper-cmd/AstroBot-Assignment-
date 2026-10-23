@@ -176,21 +176,21 @@ This investigation sheet helps you gather key technical information from the thr
 
 ##  Extended Feature API ( 3 marks)
 
-| Criteria                                 | Details                                 |
-|------------------------------------------|-----------------------------------------|
-| API Provider                             |  The Space Devs, **Launch Library 2**   |
-| API Base URL                             | `https://ll.thespacedevs.com/2.2.0/`    |
-| Endpoint                                 | `launch/upcoming/`                      |
-| Authentication method                    | `None`                                  |
-| Required query parameters                | `None`                                  |
-| Sample JSON response (formatted example) | See Below                               |
+| Criteria                                 | Details                              |
+|------------------------------------------|--------------------------------------|
+| API Provider                             | The Space Devs, **Launch Library 2** |
+| API Base URL                             | `https://ll.thespacedevs.com/2.3.0/` |
+| Endpoint                                 | `launch/upcoming/`                   |
+| Authentication method                    | `None`                               |
+| Required query parameters                | `None`                               |
+| Sample JSON response (formatted example) | See Below                            |
 
 ### Sample JSON Response
  
 ```json
 {
   "count": 120,
-  "next": "https://ll.thespacedevs.com/2.2.0/launch/upcoming/?limit=3&offset=3",
+  "next": "https://ll.thespacedevs.com/2.3.0/launch/upcoming/?limit=3&offset=3",
   "previous": null,
   "results": [
     {
