@@ -10,7 +10,7 @@
 import requests
 import json
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from dotenv import load_dotenv
 import os
 
@@ -185,7 +185,7 @@ def get_iss_location(api_key):
         place = location['name']
 
     weather_info = get_weather_by_coords(lat, lon, api_key, place)
-    return f"ISS Position (Lat: {lat}, Lon: {lon}) at {datetime.now().astimezone().strftime("%Z")   }:\n{weather_info}"
+    return f"ISS Position (Lat: {lat}, Lon: {lon}) at {datetime.fromtimestamp(data['timestamp'], timezone.utc).astimezone().strftime("%d/%m/%Y %H:%M:%S %Z")}:\n{weather_info}"
 
 def get_weather_by_coords(lat, lon, api_key, location_name=None):
     url = 'https://api.openweathermap.org/data/2.5/weather'
