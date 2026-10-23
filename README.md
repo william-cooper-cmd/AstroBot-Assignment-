@@ -269,20 +269,57 @@ if LAUNCH_CACHE["text"] and now - LAUNCH_CACHE["time"] < LAUNCH_CACHE_SECONDS:
     return LAUNCH_CACHE["text"]
 ```
 
+**Input validation**
+
+- The bot only reacts to messages that @ it followed by `/`. Anything else is ignored.
+- Text is normalised with `.lower().strip()` and splits with `partition(" ") into a command and an argument
+- The command is compared agaist a fixed list (`/help`, `/weather`, `/iss`, `/launch`, `/quit`) using `if/elif`. Unknown inputs produce and "Unknown command" message
+- An empty argument for `/weather` returns a usage message instead of calling the API
+- The city name is passed through the `params` dicitionary of `requests`, which URL-encodes it, so user text cannot alter the structure of the request URL
+
+```python
+command = message_text[len(bot_name):].strip()
+cmd, _, arg = command.partition(" ")
+if cmd == "/weather" and not arg:
+    send_message(token, room_id, f"Usage @{bot_name} /weather <city>")
+```
+
 ---
 
 ###  RESTful API Usage in Your Application (3 marks )
 
-Explain how REST APIs are used in your AstroBot: 
+**HTTP methods** Astro bot uses `GET` to read data and `POST` to create data. All requests are stateless: each one carries its own credetials and the server keeps no session for the bot
 
-- Describe how HTTP methods (GET, POST) are used  
-- Explain how your bot interacts with APIs (Webex, Weather, ISS, Geocoding)  
-- Describe how JSON responses are received and processed  
+| API              | Method | Endpoint                     | Purpose                                    | Function in code                           |
+|------------------|--------|------------------------------|--------------------------------------------|--------------------------------------------|
+| Webex            | GET    | `/rooms`                     | List the rooms the bot can access          | `get_rooms()`                              |
+| Webex            | GET    | `/people/me`                 | Get the bot's display name                 | `main()`                                   |
+| Webex            | GET    | `/messages?roomId=...&max=1` | Read the latest message mentioning the bot | `get_latest_message()`                     |
+| Webex            | POST   | `/messages`                  | Send a reply to the room                   | `send_message()`                           |
+| OpenWeatherMap   | GET    | `/geo/1.0/direct`            | City name to latitude and longitude        | `get_city_coordinates()`                   |
+| OpenWeatherMap   | GET    | `/geo/1.0/reverse`           | ISS coordinates to nearest place name      | `reverse_geocode()`                        |
+| OpenWeatherMap   | GET    | `/data/2.5/weather`          | Current weather at coordinates             | `get_weather()`, `get_weather_by_coords()` |
+| Open Notify      | GET    | `/iss-now.json`              | Current ISS position and timestamp         | `get_iss_location()`                       |
+| Launch Library 2 | GET    | `/launch/upcoming/`          | Upcoming rocket launches                   | `get_upcoming_launches()`                  |
 
-Note: Relate your explanation directly to your code for higher grade. 
+**How the bot ineracts with the APIs** The `/weather` cmmandis a chain of two calls. The bot first sends the city name to the gecoding endpoint to get the coordiantes. It then sends them to the weather endpoint. The `/iss` command chains three calls: open-notify gives the ISS position, reverse geocoding turns it into a place name, the weather endpoint gives weather conditions at that place. Replies are sent with a `POST` that contains a JSON body
 
-#### Security Considerations: (2 marks)
-- Check response status codes, Handling invalid or unexpected API responses, Avoiding excessive API calls
+```python
+headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+data = {"roomId": room_id, "text": message}
+requests.post(url, headers=headers, data=json.dumps(data), timeout=10)
+```
+**How JSON response are processes** Every API replies with JSON. The bot calls `response.json()` which turns the body into python dictionaries, then extracts only the fields it needs. For example the geocoding response is a list, so the bot takes the first item, and the weather response is a nested dictionary
+
+```python
+data = response.json()
+return data[0] if data else None          
+ 
+temp = weather.get('main', {}).get('temp', 'N/A')   # weather: nested dict
+```
+
+`format_weather()` and `format_launch()` then convert the extracted values into a readable string, including the stargazing verdict, which combines cloud cover, visibility, humidity and wind speed.
+
 
 ---
 
