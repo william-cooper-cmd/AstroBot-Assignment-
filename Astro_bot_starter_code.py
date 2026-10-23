@@ -102,7 +102,7 @@ def send_message(token, room_id, message):
         "text": message
     }
     try:
-        requests.post(url, headers=headers, data=json.dumps(data), timeout=10)
+        requests.post(url, headers=headers, data=json.dumps(data), timeout=10).raise_for_status()
     except requests.RequestException:
         return "Failed to send message"
 
@@ -270,7 +270,7 @@ def main():
         return
 
     data = response.json()
-    bot_name = data['displayName'].lower()
+    bot_name = (data['displayName'].split(maxsplit=1)[0]).lower()
 
     print_rooms(rooms)
     room_id = select_room(rooms)
