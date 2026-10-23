@@ -9,15 +9,15 @@ This investigation sheet helps you gather key technical information from the thr
 
 ##  Webex Messaging API (4 marks)
 
-| Criteria                              | HTTP Method | Endpoint / Details                        | Description                                         |
-|---------------------------------------|-------------|-------------------------------------------|-----------------------------------------------------|
-| API Base URL                          | —           | `https://webexapis.com/v1/`               | Base URL for the Webex REST API                     |
-| Authentication Method                 | —           | Bearer Token                              | Authenticates requests using an access token        |
-| Endpoint to list rooms                | GET         | `/rooms`                                  | Retrieves a list of rooms                           |
-| Endpoint to get messages              | GET         | `/messages?roomId=ROOM_ID`                | Retrieves messages from a specific room             |
-| Endpoint to send a message            | POST        | `/messages`                               | Sends a message to a specified room                 |
-| Required Headers                      | —           | `Authorization: Bearer YOUR_ACCESS_TOKEN` | Authenticates the API request                       |
-| Sample full GET request               | GET         | `https://webexapis.com/v1/rooms`          | Retrieves rooms available to the authenticated user |
+| Criteria                   | HTTP Method | Endpoint / Details                                                         | Description                                         |
+|----------------------------|-------------|----------------------------------------------------------------------------|-----------------------------------------------------|
+| API Base URL               | —           | `https://webexapis.com/v1/`                                                | Base URL for the Webex REST API                     |
+| Authentication Method      | —           | Bearer Token                                                               | Authenticates requests using an access token        |
+| Endpoint to list rooms     | GET         | `/rooms`                                                                   | Retrieves a list of rooms                           |
+| Endpoint to get messages   | GET         | `/messages?roomId=ROOM_ID`                                                 | Retrieves messages from a specific room             |
+| Endpoint to send a message | POST        | `/messages`                                                                | Sends a message to a specified room                 |
+| Required Headers           | —           | `Authorization: Bearer YOUR_ACCESS_TOKEN Content-Type: "application/json"` | Authenticates the API request                       |
+| Sample full GET request    | GET         | `https://webexapis.com/v1/rooms`                                           | Retrieves rooms available to the authenticated user |
 
 
 ### Sample JSON Response (List Rooms)
@@ -163,30 +163,60 @@ This investigation sheet helps you gather key technical information from the thr
 
 ---
 
-##  Epoch to Human Time Conversion (Python time module) (2 marks)
+##  Epoch to Human Time Conversion (Python datetime module) (2 marks)
 
-| Criteria                         | Details                           |
-|----------------------------------|-----------------------------------|
-| Library used                     | `_______________________________` |
-| Function used to convert epoch   | `_______________________________` |
-| Sample code to convert timestamp |  
-```  
-```
-|
-| Output (human-readable time) | `_______________________________` |
+| Criteria                         | Details                             |
+|----------------------------------|-------------------------------------|
+| Library used                     | `datetime`                          |
+| Function used to convert epoch   | `.fromtimestamp`                    |
+| Sample code to convert timestamp | `datetime.fromtimestamp(timestamp)` |
+
+| Output (human-readable time) | `strftime("%d/%m/%Y %H:%M:%S %Z")` |
 
 ---
 
 ##  Extended Feature API ( 3 marks)
 
-| Criteria                                 | Details                           |
-|------------------------------------------|-----------------------------------|
-| API Provider                             | '_________'                       |
-| API Base URL                             | `_______________________________` |
-| Endpoint                                 | `_______________________________` |
-| Authentication method                    | `_______________________________` |
-| Required query parameters                | `_______________________________` |
-| Sample JSON response (formatted example) |  
+| Criteria                                 | Details                                   |
+|------------------------------------------|-------------------------------------------|
+| API Provider                             | ' The Space Devs, **Launch Library 2**  ' |
+| API Base URL                             | `https://ll.thespacedevs.com/2.2.0/`      |
+| Endpoint                                 | `launch/upcoming/`                        |
+| Authentication method                    | `None`                                    |
+| Required query parameters                | `None`                                    |
+| Sample JSON response (formatted example) | See Below                                 |
+```
+### Sample JSON Response
+
+### Sample JSON Response (abridged)
+ 
+```json
+{
+  "count": 120,
+  "next": "https://ll.thespacedevs.com/2.2.0/launch/upcoming/?limit=3&offset=3",
+  "previous": null,
+  "results": [
+    {
+      "id": "00000000-0000-0000-0000-000000000000",
+      "name": "Falcon 9 Block 5 | Starlink Group 10-1",
+      "status": {
+        "id": 1,
+        "name": "Go for Launch"
+      },
+      "net": "2026-10-25T14:30:00Z",
+      "launch_service_provider": {
+        "id": 121,
+        "name": "SpaceX"
+      },
+      "pad": {
+        "name": "Space Launch Complex 40",
+        "location": {
+          "name": "Cape Canaveral SFS, FL, USA"
+        }
+      }
+    }
+  ]
+}
 ```
 
 ```
@@ -196,23 +226,32 @@ This investigation sheet helps you gather key technical information from the thr
 
 ##  Evaluation – Web Architecture, MVC Design & Security 
 
-In this section, evaluate how web technologies, architecture, and design patterns have been applied in your **AstroBot**. Your responses must relate directly to your implementation and include reflection on your design decisions.
-
----
-
 ###  Web Architecture – Client–Server Model (3 marks)
 
-Explain how the client–server model applies to your AstroBot:
+**Client:** AstroBot is a program that acts as a HTTP client. It sends request using the `requests` library. The user interacts through the Webex app, which is also a client of the Webex server.
 
-- Identify the **client** 
-- Identify the **server(s)** 
-- Describe how data flows between:
-  - User, AstroBot and APIs
+| Server                    | Role in the bot                                         |
+|---------------------------|---------------------------------------------------------|
+| Webex (`webexapis.com`)   | Stores the chat room, delivers and accepts messages     |
+| OpenWeatherMap            | Geocoding, reverse geocoding and current weather        |
+| Open Notify               | Current ISS position and timestamp                      |
+| Launch Library 2          | Upcoming rocket launches (extended feature)             |
+
+**Data Flow:** The bot does not recieve messages directrrly, instead it polls Webex every 5 seconds.
+
+1. The user types a commadn into the Webex space. e.g. `@AstroBot /weather London`
+2. The Webex server stores the message
+3. AstroBot sends `GET /messages` and recives the latest message as a json
+4. The controller pareses the command calls the matching function
+5. That function sends `GET` requests to the relevant API servers 
+6. The bot formats the JSON into readable text and sends `POST /messages` to Webex
+7. The Webex server delivers the reply to the user
 
 Include a **simple block diagram** to illustrate this interaction.
 
 ####  Security Considerations: (3 marks )
-- Consider but not limiting to secure handling of API keys and tokens, API rate limiting, and Input validation (e.g., handling user commands safely), include examples from code where necessary to illustrate.
+
+**Secure handeling of API keys and tokens:** Credentials are not written into the code. They are loaded from a `.env` file with `python-dotenv` or entered manually at startup, so they can stay out of the repo. The `.env` file is listed in the `.gtignore` so it is never commited to Github. The bot also stops if credentials are missing, rather than sending requests that would fail with a 401.
 
 ---
 
