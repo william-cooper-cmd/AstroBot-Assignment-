@@ -180,7 +180,7 @@ This investigation sheet helps you gather key technical information from the thr
 |------------------------------------------|--------------------------------------|
 | API Provider                             | The Space Devs, **Launch Library 2** |
 | API Base URL                             | `https://ll.thespacedevs.com/2.3.0/` |
-| Endpoint                                 | `launch/upcoming/`                   |
+| Endpoint                                 | `launches/upcoming`                  |
 | Authentication method                    | `None`                               |
 | Required query parameters                | `None`                               |
 | Sample JSON response (formatted example) | See Below                            |
@@ -189,30 +189,374 @@ This investigation sheet helps you gather key technical information from the thr
  
 ```json
 {
-  "count": 120,
-  "next": "https://ll.thespacedevs.com/2.3.0/launch/upcoming/?limit=3&offset=3",
-  "previous": null,
-  "results": [
-    {
-      "id": "00000000-0000-0000-0000-000000000000",
-      "name": "Falcon 9 Block 5 | Starlink Group 10-1",
-      "status": {
-        "id": 1,
-        "name": "Go for Launch"
-      },
-      "net": "2026-10-25T14:30:00Z",
-      "launch_service_provider": {
-        "id": 121,
-        "name": "SpaceX"
-      },
-      "pad": {
-        "name": "Space Launch Complex 40",
-        "location": {
-          "name": "Cape Canaveral SFS, FL, USA"
+    "count": 476,
+    "next": "https://ll.thespacedevs.com/2.3.0/launches/upcoming/?limit=1&offset=1",
+    "previous": null,
+    "results": [
+        {
+            "id": "7766f3bb-674c-4c71-b986-963bd633fcfe",
+            "url": "https://ll.thespacedevs.com/2.3.0/launches/7766f3bb-674c-4c71-b986-963bd633fcfe/",
+            "name": "Electron | We're Not Hawking Around (3x HawkEye 360)",
+            "response_mode": "normal",
+            "slug": "electron-were-not-hawking-around-3x-hawkeye-360",
+            "launch_designator": null,
+            "status": {
+                "id": 3,
+                "name": "Launch Successful",
+                "abbrev": "Success",
+                "description": "The launch vehicle successfully inserted its payload(s) into the target orbit(s)."
+            },
+            "last_updated": "2026-10-23T11:32:38Z",
+            "net": "2026-10-23T07:11:00Z",
+            "net_precision": {
+                "id": 1,
+                "name": "Minute",
+                "abbrev": "MIN",
+                "description": "The T-0 is accurate to the minute."
+            },
+            "window_end": "2026-10-23T08:45:00Z",
+            "window_start": "2026-10-23T07:00:00Z",
+            "image": {
+                "id": 1727,
+                "name": "[AUTO] Electron - image",
+                "image_url": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/electron_image_20190705175640.jpeg",
+                "thumbnail_url": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/255bauto255d__image_thumbnail_20240305193613.jpeg",
+                "credit": null,
+                "license": {
+                    "id": 1,
+                    "name": "Unknown",
+                    "priority": 9,
+                    "link": null
+                },
+                "single_use": true,
+                "variants": []
+            },
+            "infographic": null,
+            "probability": 90,
+            "weather_concerns": null,
+            "failreason": "",
+            "hashtag": null,
+            "launch_service_provider": {
+                "response_mode": "list",
+                "id": 147,
+                "url": "https://ll.thespacedevs.com/2.3.0/agencies/147/",
+                "name": "Rocket Lab",
+                "abbrev": "RL",
+                "type": {
+                    "id": 3,
+                    "name": "Commercial"
+                }
+            },
+            "rocket": {
+                "id": 7567,
+                "configuration": {
+                    "response_mode": "list",
+                    "id": 26,
+                    "url": "https://ll.thespacedevs.com/2.3.0/launcher_configurations/26/",
+                    "name": "Electron",
+                    "families": [],
+                    "full_name": "Electron",
+                    "variant": ""
+                }
+            },
+            "mission": {
+                "id": 6792,
+                "name": "We're Not Hawking Around (3x HawkEye 360)",
+                "type": "Earth Science",
+                "description": "HawkEye 360 is a a space-based civil global intelligence satellite network using radio frequency (RF) technology to help monitor transportation across air, land and sea and assist with emergencies, and to provide civil SIGINT (Signal Intelligence) mission.\r\n\r\nThe constellation of small satellites (named Hawk ) will collect information on specific radio signals worldwide to provide high-precision radio frequency mapping and analytics from Low Earth orbit (LEO).",
+                "image": null,
+                "orbit": {
+                    "id": 17,
+                    "name": "Sun-Synchronous Orbit",
+                    "abbrev": "SSO",
+                    "celestial_body": {
+                        "response_mode": "list",
+                        "id": 1,
+                        "name": "Earth"
+                    }
+                },
+                "agencies": [
+                    {
+                        "response_mode": "normal",
+                        "id": 1061,
+                        "url": "https://ll.thespacedevs.com/2.3.0/agencies/1061/",
+                        "name": "HawkEye 360",
+                        "abbrev": "he360",
+                        "type": {
+                            "id": 5,
+                            "name": "Private"
+                        },
+                        "featured": false,
+                        "country": [
+                            {
+                                "id": 2,
+                                "name": "United States of America",
+                                "alpha_2_code": "US",
+                                "alpha_3_code": "USA",
+                                "nationality_name": "American",
+                                "nationality_name_composed": "Americano"
+                            }
+                        ],
+                        "description": "HawkEye 360 is an American geospatial analytics company headquartered in Herndon, Virginia. It is a commercial seller of radio frequency signal location data gathered by a satellite constellation.",
+                        "administrator": "CEO: John Serafini",
+                        "founding_year": 2015,
+                        "launchers": "",
+                        "spacecraft": "HawkEye 360",
+                        "parent": null,
+                        "image": null,
+                        "logo": {
+                            "id": 138,
+                            "name": "[AUTO] HawkEye 360 - logo",
+                            "image_url": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/hawkeye2520360_logo_20230807090248.png",
+                            "thumbnail_url": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/255bauto255d__image_thumbnail_20240305185002.png",
+                            "credit": null,
+                            "license": {
+                                "id": 1,
+                                "name": "Unknown",
+                                "priority": 9,
+                                "link": null
+                            },
+                            "single_use": true,
+                            "variants": []
+                        },
+                        "social_logo": {
+                            "id": 60,
+                            "name": "[AUTO] HawkEye 360 - social_logo",
+                            "image_url": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/hawkeye2520360_nation_20230807090249.jpg",
+                            "thumbnail_url": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/255bauto255d__image_thumbnail_20240305184800.jpeg",
+                            "credit": null,
+                            "license": {
+                                "id": 1,
+                                "name": "Unknown",
+                                "priority": 9,
+                                "link": null
+                            },
+                            "single_use": true,
+                            "variants": []
+                        },
+                        "total_launch_count": 0,
+                        "consecutive_successful_launches": 0,
+                        "successful_launches": 0,
+                        "failed_launches": 0,
+                        "pending_launches": 0,
+                        "consecutive_successful_landings": 0,
+                        "successful_landings": 0,
+                        "failed_landings": 0,
+                        "attempted_landings": 0,
+                        "successful_landings_spacecraft": 0,
+                        "failed_landings_spacecraft": 0,
+                        "attempted_landings_spacecraft": 0,
+                        "successful_landings_payload": 0,
+                        "failed_landings_payload": 0,
+                        "attempted_landings_payload": 0,
+                        "info_url": "https://www.he360.com/",
+                        "wiki_url": "https://en.wikipedia.org/wiki/HawkEye_360",
+                        "social_media_links": []
+                    }
+                ],
+                "info_urls": [],
+                "vid_urls": []
+            },
+            "pad": {
+                "id": 65,
+                "url": "https://ll.thespacedevs.com/2.3.0/pads/65/",
+                "active": true,
+                "agencies": [
+                    {
+                        "response_mode": "normal",
+                        "id": 147,
+                        "url": "https://ll.thespacedevs.com/2.3.0/agencies/147/",
+                        "name": "Rocket Lab",
+                        "abbrev": "RL",
+                        "type": {
+                            "id": 3,
+                            "name": "Commercial"
+                        },
+                        "featured": true,
+                        "country": [
+                            {
+                                "id": 2,
+                                "name": "United States of America",
+                                "alpha_2_code": "US",
+                                "alpha_3_code": "USA",
+                                "nationality_name": "American",
+                                "nationality_name_composed": "Americano"
+                            }
+                        ],
+                        "description": "Rocket Lab is an American aerospace manufacturer with a wholly owned New Zealand subsidiary. The company develops lightweight, cost-effective commercial rocket launch services. The Electron Program was founded on the premise that small payloads such as CubeSats require dedicated small launch vehicles and flexibility not currently offered by traditional rocket systems. Its rocket, the Electron, is a light-weight rocket and is now operating commercially. The company is also producing a variety of spacecrafts and spacecrafts components.",
+                        "administrator": "CEO: Peter Beck",
+                        "founding_year": 2006,
+                        "launchers": "Electron",
+                        "spacecraft": "",
+                        "parent": null,
+                        "image": {
+                            "id": 24,
+                            "name": "[AUTO] Rocket Lab - image",
+                            "image_url": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/rocket2520lab2520ltd_image_20190207032456.jpeg",
+                            "thumbnail_url": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/255bauto255d__image_thumbnail_20240305184649.jpeg",
+                            "credit": null,
+                            "license": {
+                                "id": 1,
+                                "name": "Unknown",
+                                "priority": 9,
+                                "link": null
+                            },
+                            "single_use": true,
+                            "variants": []
+                        },
+                        "logo": {
+                            "id": 176,
+                            "name": "[AUTO] Rocket Lab - logo",
+                            "image_url": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/rocket2520lab2520ltd_logo_20220218075411.png",
+                            "thumbnail_url": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/255bauto255d__image_thumbnail_20240305185115.png",
+                            "credit": null,
+                            "license": {
+                                "id": 1,
+                                "name": "Unknown",
+                                "priority": 9,
+                                "link": null
+                            },
+                            "single_use": true,
+                            "variants": []
+                        },
+                        "social_logo": {
+                            "id": 88,
+                            "name": "[AUTO] Rocket Lab - social_logo",
+                            "image_url": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/rocket2520lab2520ltd_nation_20230531050352.jpg",
+                            "thumbnail_url": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/255bauto255d__image_thumbnail_20240305184840.jpeg",
+                            "credit": null,
+                            "license": {
+                                "id": 1,
+                                "name": "Unknown",
+                                "priority": 9,
+                                "link": null
+                            },
+                            "single_use": true,
+                            "variants": []
+                        }
+                    }
+                ],
+                "name": "Rocket Lab Launch Complex 1A",
+                "image": {
+                    "id": 1412,
+                    "name": "Electron on LC-1A (Return to Sender)",
+                    "image_url": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/electron25202_image_20201120015105.jpg",
+                    "thumbnail_url": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/255bauto255d__image_thumbnail_20240305192700.jpeg",
+                    "credit": "Rocket Lab",
+                    "license": {
+                        "id": 7,
+                        "name": "Rocket Lab Image Use Policy",
+                        "priority": 3,
+                        "link": "https://www.rocketlabusa.com/about/gallery/"
+                    },
+                    "single_use": false,
+                    "variants": []
+                },
+                "description": "",
+                "info_url": null,
+                "wiki_url": "https://en.wikipedia.org/wiki/Rocket_Lab_Launch_Complex_1",
+                "map_url": "https://www.google.com/maps?q=-39.262833,177.864469",
+                "latitude": -39.262833,
+                "longitude": 177.864469,
+                "country": {
+                    "id": 51,
+                    "name": "New Zealand",
+                    "alpha_2_code": "NZ",
+                    "alpha_3_code": "NZL",
+                    "nationality_name": "Kiwi",
+                    "nationality_name_composed": "Kiwi"
+                },
+                "map_image": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_65_20200803143549.jpg",
+                "total_launch_count": 44,
+                "orbital_launch_attempt_count": 44,
+                "fastest_turnaround": "P7DT14H29M39S",
+                "location": {
+                    "response_mode": "normal",
+                    "id": 10,
+                    "url": "https://ll.thespacedevs.com/2.3.0/locations/10/",
+                    "name": "Rocket Lab Launch Complex 1, Mahia Peninsula, New Zealand",
+                    "celestial_body": {
+                        "response_mode": "normal",
+                        "id": 1,
+                        "name": "Earth",
+                        "type": {
+                            "id": 1,
+                            "name": "Planet"
+                        },
+                        "diameter": 12742000,
+                        "mass": 5.972168e+24,
+                        "gravity": 9.80655,
+                        "length_of_day": "1 00:00:00",
+                        "atmosphere": true,
+                        "image": {
+                            "id": 2040,
+                            "name": "Earth (Apollo 17)",
+                            "image_url": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/earth_2528apol_image_20240402194304.jpeg",
+                            "thumbnail_url": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/earth_2528apol_image_thumbnail_20240402194305.jpeg",
+                            "credit": "NASA",
+                            "license": {
+                                "id": 4,
+                                "name": "NASA Image and Media Guidelines",
+                                "priority": 0,
+                                "link": "https://www.nasa.gov/nasa-brand-center/images-and-media/"
+                            },
+                            "single_use": true,
+                            "variants": []
+                        },
+                        "description": "Earth is the third planet from the Sun and the only astronomical object known to harbor life.",
+                        "wiki_url": "https://en.wikipedia.org/wiki/Earth",
+                        "total_attempted_launches": 7643,
+                        "successful_launches": 7086,
+                        "failed_launches": 557,
+                        "total_attempted_landings": 1381,
+                        "successful_landings": 1332,
+                        "failed_landings": 49
+                    },
+                    "active": true,
+                    "country": {
+                        "id": 51,
+                        "name": "New Zealand",
+                        "alpha_2_code": "NZ",
+                        "alpha_3_code": "NZL",
+                        "nationality_name": "Kiwi",
+                        "nationality_name_composed": "Kiwi"
+                    },
+                    "description": "Rocket Lab Launch Complex 1 is a commercial spaceport located close to Ahuriri Point at the southern tip of Māhia Peninsula, on the east coast of New Zealand's North Island. It is owned and operated by private spaceflight company Rocket Lab and supports launches of the company's Electron rocket for small satellites. With the launch of Electron on 25 May 2017, it became the first private spaceport to host an orbital launch attempt, and the first site in New Zealand to host an orbital launch attempt. With the Electron launch of 21 January 2018, it became the first private spaceport to host a successful orbital launch.",
+                    "image": {
+                        "id": 2206,
+                        "name": "Rocket Lab Launch Complex 1",
+                        "image_url": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/rocket_lab_laun_image_20240918164228.jpg",
+                        "thumbnail_url": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/rocket_lab_laun_image_thumbnail_20240918164228.jpeg",
+                        "credit": "Rocket Lab",
+                        "license": {
+                            "id": 7,
+                            "name": "Rocket Lab Image Use Policy",
+                            "priority": 3,
+                            "link": "https://www.rocketlabusa.com/about/gallery/"
+                        },
+                        "single_use": true,
+                        "variants": []
+                    },
+                    "map_image": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/location_10_20200803142509.jpg",
+                    "longitude": 177.86586,
+                    "latitude": -39.26085,
+                    "timezone_name": "Pacific/Auckland",
+                    "total_launch_count": 85,
+                    "total_landing_count": 17
+                }
+            },
+            "webcast_live": false,
+            "program": [],
+            "orbital_launch_attempt_count": 7420,
+            "location_launch_attempt_count": 85,
+            "pad_launch_attempt_count": 44,
+            "agency_launch_attempt_count": 98,
+            "orbital_launch_attempt_count_year": 247,
+            "location_launch_attempt_count_year": 16,
+            "pad_launch_attempt_count_year": 9,
+            "agency_launch_attempt_count_year": 19
         }
-      }
-    }
-  ]
+    ]
 }
 ```
 
