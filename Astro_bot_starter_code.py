@@ -175,15 +175,14 @@ def get_iss_location(api_key):
     url = "http://api.open-notify.org/iss-now.json"
 
     try:
-        response = requests.get(url, params=None, timeout=10)
+        response = requests.get(url, timeout=10)
         response.raise_for_status()
-    except requests.RequestException:
+        data = response.json()
+        lat = data["iss_position"]["latitude"]
+        lon = data["iss_position"]["longitude"]
+        timestamp = data["timestamp"]
+    except (requests.RequestException, KeyError, ValueError):
         return "Failed to get ISS location"
-
-    data = response.json()
-
-    lat = data["iss_position"]["latitude"]
-    lon = data["iss_position"]["longitude"]
 
     location = reverse_geocode(lat, lon, api_key)
 
@@ -224,19 +223,22 @@ def format_weather(weather, location_name=None):
     else:
         prefix = "Current weather (Open Ocean): "
 
-    is_good_stargazing = (
-        weather['clouds']['all'] <= 15 and
-        weather['visibility'] >= 10000 and
-        weather['main']['humidity'] < 60 and
-        weather['wind']['speed'] < 5
-    )
+    clouds = weather.get('clouds', {}).get('all', 100)
+    visibility = weather.get('visibility', 0)
+    humidity = weather.get('main', {}).get('humidity', 100)
+    wind_speed = weather.get('wind', {}).get('speed', 99)
+    temp = weather.get('main', {}).get('temp', 'N/A')
+    desc = (weather.get('weather') or [{}])[0].get('description', 'unknown')
+
+    is_good_stargazing = clouds <= 15 and visibility >= 10000 and humidity < 60 and wind_speed < 5
+
     stargazing_status = "Good for stargazing" if is_good_stargazing else "Not good for stargazing"
 
     return (
         f"{prefix}"
-        f"{weather['main']['temp']}°C, {weather['weather'][0]['description']} | "
-        f"humidity: {weather['main']['humidity']}%, "
-        f"wind speed: {weather['wind']['speed']} m/s. "
+        f"{temp}°C, {desc} | "
+        f"humidity: {humidity}%, "
+        f"wind speed: {wind_speed} m/s. "
         f"{stargazing_status}"
     )
 
@@ -249,7 +251,6 @@ LAUNCH_CACHE_SECONDS = 600
 
 def format_launch(launch):
     name = launch.get("name", "Unknown launch")
-    status = (launch.get("status") or {}).get("name", "Unknown")
     provider = (launch.get("launch_service_provider") or {}).get("name", "Unknown provider")
 
     pad = launch.get("pad") or {}
@@ -258,9 +259,7 @@ def format_launch(launch):
     place = f"{pad_name}, {location}" if location else pad_name
 
     try:
-        when = {
-            datetime.fromisoformat(launch["net"].replace("Z", "+00:00")).astimezone().strftime('%d/%m/%Y %H:%M %Z')
-        }
+        when = datetime.fromisoformat(launch["net"].replace("Z", "+00:00")).astimezone().strftime('%d/%m/%Y %H:%M %Z')
     except (KeyError, AttributeError, ValueError):
         when = "TBD"
 
@@ -276,7 +275,7 @@ def get_upcoming_launches():
     if LAUNCH_CACHE["text"] and now - LAUNCH_CACHE["time"] < LAUNCH_CACHE_SECONDS:
         return LAUNCH_CACHE["text"]
 
-    url = "https://ll.thespacedevs.com/2.3.0/launch/upcoming/"
+    url = "https://ll.thespacedevs.com/2.3.0/launches/upcoming"
     params = {"limit": 5}
 
     try:
@@ -350,7 +349,7 @@ def main():
                 arg = arg.strip()
 
                 if cmd == "/help":
-                    send_message(token, room_id, f"@{bot_name} /weather <city>\n@{bot_name} /iss\n@{bot_name}  @{bot_name} /launch\n /help\n@{bot_name} /quit")
+                    send_message(token, room_id, f"@{bot_name} /weather <city>\n@{bot_name} /iss\n@{bot_name} /launch\n@{bot_name} /help\n@{bot_name} /quit")
 
                 elif cmd == "/weather":
                     if not arg:
