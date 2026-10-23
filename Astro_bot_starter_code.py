@@ -45,7 +45,6 @@ def get_rooms(token):
         "Accept": "application/json"
     }
     response = requests.get(url,headers=headers)
-    print(response)
 
     if response.status_code != 200:
         print("Error fetching rooms:", response.status_code)
@@ -245,6 +244,11 @@ def main():
         print("No rooms found" )
         return
 
+    headers = {"Authorization": f"Bearer {token}",}
+    response = requests.get("https://webexapis.com/v1/people/me", headers=headers)
+    data = response.json()
+    bot_name = data['displayName']
+
     print_rooms(rooms)
     room_id = select_room(rooms)
 
@@ -258,19 +262,19 @@ def main():
 
             last_message_id = message_id
 
-            print(message_text)
+            message_text = message_text.lower().strip()
 
-            if not message_text.lower().startswith('astro /'):
+            if not message_text.startswith('astro /'):
                 continue
 
-            if message_text.lower() == "astro /help":
+            if message_text == "astro /help":
                 send_message(
                     token,
                     room_id,
-                    "/weather <city>\n/iss\n/help\n/quit"
+                    "@astro /weather <city>\n/iss\n/help\n/quit"
                 )
 
-            elif message_text.lower().startswith('astro /weather'):
+            elif message_text.startswith('astro /weather'):
 
                 parts = message_text.split(maxsplit=2)
 
@@ -280,10 +284,10 @@ def main():
                     city = parts[2]
                     send_message(token, room_id, get_weather(city, weather_key))
 
-            elif message_text.lower() == "astro /iss":
+            elif message_text == "astro /iss":
                 send_message(token, room_id, get_iss_location(weather_key))
 
-            elif message_text.lower() == "astro /quit":
+            elif message_text == "astro /quit":
                 send_message(token, room_id, "AstroBot shutting down.")
                 break
 
