@@ -580,7 +580,7 @@ This investigation sheet helps you gather key technical information from the thr
 1. The user types a command into the Webex space. e.g. `@Astro /weather London`
 2. The Webex server stores the message
 3. AstroBot sends `GET /messages` and receives the latest message as a json
-4. The controller pareses the command calls the matching function
+4. The controller parses the command and calls the matching function
 5. That function sends `GET` requests to the relevant API servers 
 6. The bot formats the JSON into readable text and sends `POST /messages` to Webex
 7. The Webex server delivers the reply to the user
@@ -589,7 +589,7 @@ Include a **simple block diagram** to illustrate this interaction.
 
 ####  Security Considerations: (3 marks )
 
-**Secure handling of API keys and tokens:** Credentials are not written into the code. They are loaded from a `.env` file with `python-dotenv` or entered manually at startup, so they can stay out of the repo. The `.env` file is listed in the `.gtignore` so it is never commited to GitHub. The bot also stops if credentials are missing, rather than sending requests that would fail with a 401.
+**Secure handling of API keys and tokens:** Credentials are not written into the code. They are loaded from a `.env` file with `python-dotenv` or entered manually at startup, so they can stay out of the repo. The `.env` file is listed in the `.gitignore` so it is never committed to GitHub. The bot also stops if credentials are missing, rather than sending requests that would fail with a 401.
 
 ```python
 load_dotenv() 
@@ -613,7 +613,7 @@ if not token or not weather_key:
 ```
 ***API rate limiting:*** 
 
-- The polling loops always ends with `time.sleep(5)` so the bot doesn't get rate limited form Webex
+- The polling loops always end with `time.sleep(5)` so the bot doesn't get rate limited form Webex
 - The bot only calls the weather, ISS and launch APIs when a valid command is received not on every poll
 - `/launch` is cached for 10 minutes, because the launch Library 2 allows only 15 requests per hour. If a later request fails, the bot falls back to the cached text
 
@@ -627,7 +627,7 @@ if LAUNCH_CACHE["text"] and now - LAUNCH_CACHE["time"] < LAUNCH_CACHE_SECONDS:
 
 - The bot only reacts to messages that @ it followed by `/`. Anything that matches none of them gets an "Unknow command" reply
 - Text is normalised with `.lower().strip()` and splits with `partition(" ") into a command and an argument
-- The command is compared against a fixed list (`/help`, `/weather`, `/iss`, `/launch`, `/quit`) using `if/elif`. Unknown inputs produce and "Unknown command" message
+- The command is compared against a fixed list (`/help`, `/weather`, `/iss`, `/launch`, `/quit`) using `if/elif`. Unknown inputs produce an "Unknown command" message
 - An empty argument for `/weather` returns a usage message instead of calling the API
 - The city name is passed through the `params` dictionary of `requests`, which URL-encodes it, so user text cannot alter the structure of the request URL
 
@@ -667,7 +667,7 @@ headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json
 data = {"roomId": room_id, "text": message}
 requests.post(url, headers=headers, data=json.dumps(data), timeout=10)
 ```
-**How JSON response are processes** Every API replies with JSON. The bot calls `response.json()` which turns the body into python dictionaries, then extracts only the fields it needs. For example the geocoding response is a list, so the bot takes the first item, and the weather response is a nested dictionary
+**How JSON responses are processed** Every API replies with JSON. The bot calls `response.json()` which turns the body into python dictionaries, then extracts only the fields it needs. For example the geocoding response is a list, so the bot takes the first item, and the weather response is a nested dictionary
 
 ```python
 data = response.json()
@@ -682,7 +682,7 @@ temp = weather.get('main', {}).get('temp', 'N/A')   # weather: nested dict
 
 - **Checking status codes:** each request calls `response.raise_for_status()` inside a `try/except request.RequestExecption` so 4xx and 5xx errors are caught instead of being parsed as valid data
 - **Handling invalid or unexpected responses** a failed request returns `None`, an empty list or a clear message, never a crash. Empty results are checked (`if not data`, `if not location`) and `.get()` with default values is used so a missing field such as `visibility` over the ocean does not raise a `KeyError`
-- **Avoiding excessive API calls` every request has a `timeout=10` so it cannot hang the bot, the loop sleeps 5 seconds between polls and `/launch` results are cached for 10 minutes
+- **Avoiding excessive API calls** every request has a `timeout=10` so it cannot hang the bot, the loop sleeps 5 seconds between polls and `/launch` results are cached for 10 minutes
 
 ```python
 try:
@@ -707,11 +707,11 @@ except requests.RequestException:
 
 ### 📝 Reflection and Evaluation ( 8 marks )
 
-AstroBot meets the club's core needs. A member can ask for the weather in any city, see where the ISS is with the weather beneath it, and check upcoming launches, all inside the Webex space they already use. The stargazing check is a simple, but it turns rawdata into an answer a member can act on. The extended `/launch` command gives member something to look forward to.
+AstroBot meets the club's core needs. A member can ask for the weather in any city, see where the ISS is with the weather beneath it, and check upcoming launches, all inside the Webex space they already use. The stargazing check is simple, but it turns raw data into an answer a member can act on. The extended `/launch` command gives members something to look forward to.
 
-Splitting the code into small functions worked well. Each API has its own fetch function and formating is kept apart, so I could fix and test one section without breaking the others. Adding `/launch` took one function, one `elif` branch and one help line,m  which shows the structure is easy to extend.
+Splitting the code into small functions worked well. Each API has its own fetch function and formating is kept apart, so I could fix and test one section without breaking the others. Adding `/launch` took one function, one `elif` branch and one help line, which shows the structure is easy to extend.
 
-The main security risks were exposed credentials, rate limits. Keys live in a `.env` file excluded from Git, request use timeout and status checks, results are cached and commands are matched against a fixed list so unknown input only produces an unknown command message.
+The main security risks were exposed credentials and rate limits. Keys live in a `.env` file excluded from Git, request use timeout and status checks, results are cached and commands are matched against a fixed list so unknown input only produces an unknown command message.
 
 Getting the latest message could use a Webex webhook instead of polling, which avoids missed messages when two commands arrive within five seconds. I would split the code into separate model, view and controller modules, add unit tests with mocked API responses.
 
