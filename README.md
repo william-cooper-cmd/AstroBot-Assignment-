@@ -592,10 +592,21 @@ Include a **simple block diagram** to illustrate this interaction.
 **Secure handling of API keys and tokens:** Credentials are not written into the code. They are loaded from a `.env` file with `python-dotenv` or entered manually at startup, so they can stay out of the repo. The `.env` file is listed in the `.gtignore` so it is never commited to GitHub. The bot also stops if credentials are missing, rather than sending requests that would fail with a 401.
 
 ```python
-load_dotenv()
-token = os.getenv("WEBEX_TOKEN")
-weather_key = os.getenv("API_KEY")
- 
+load_dotenv() 
+
+def get_webex_token():
+    choice = input("Use hard-coded Webex token? (y/n): ").lower()
+    if choice == "n":
+        token = input("Enter your Webex Access Token: ")
+        return token
+    else:
+        return os.getenv("WEBEX_TOKEN")
+
+    
+    
+token = get_webex_token()
+weather_key = get_api_key("Weather API key", os.getenv("API_KEY"))
+
 if not token or not weather_key:
     print("Missing Webex token or Weather API key")
     return
@@ -614,7 +625,7 @@ if LAUNCH_CACHE["text"] and now - LAUNCH_CACHE["time"] < LAUNCH_CACHE_SECONDS:
 
 **Input validation**
 
-- The bot only reacts to messages that @ it followed by `/`. Anything else is ignored.
+- The bot only reacts to messages that @ it followed by `/`. Anything that matches none of them gets an "Unknow command" reply
 - Text is normalised with `.lower().strip()` and splits with `partition(" ") into a command and an argument
 - The command is compared against a fixed list (`/help`, `/weather`, `/iss`, `/launch`, `/quit`) using `if/elif`. Unknown inputs produce and "Unknown command" message
 - An empty argument for `/weather` returns a usage message instead of calling the API
@@ -623,8 +634,12 @@ if LAUNCH_CACHE["text"] and now - LAUNCH_CACHE["time"] < LAUNCH_CACHE_SECONDS:
 ```python
 command = message_text[len(bot_name):].strip()
 cmd, _, arg = command.partition(" ")
-if cmd == "/weather" and not arg:
-    send_message(token, room_id, f"Usage @{bot_name} /weather <city>")
+arg = arg.strip()
+
+if cmd == "/weather":
+    if not arg:
+        return f"Usage: @{bot_name} /weather <city>", False
+    return get_weather(arg, weather_key), False
 ```
 
 ---
@@ -633,17 +648,17 @@ if cmd == "/weather" and not arg:
 
 **HTTP methods** Astro bot uses `GET` to read data and `POST` to create data. All requests are stateless: each one carries its own credentials and the server keeps no session for the bot
 
-| API              | Method | Endpoint                     | Purpose                                    | Function in code                           |
-|------------------|--------|------------------------------|--------------------------------------------|--------------------------------------------|
-| Webex            | GET    | `/rooms`                     | List the rooms the bot can access          | `get_rooms()`                              |
-| Webex            | GET    | `/people/me`                 | Get the bot's display name                 | `main()`                                   |
-| Webex            | GET    | `/messages?roomId=...&max=1` | Read the latest message mentioning the bot | `get_latest_message()`                     |
-| Webex            | POST   | `/messages`                  | Send a reply to the room                   | `send_message()`                           |
-| OpenWeatherMap   | GET    | `/geo/1.0/direct`            | City name to latitude and longitude        | `get_city_coordinates()`                   |
-| OpenWeatherMap   | GET    | `/geo/1.0/reverse`           | ISS coordinates to nearest place name      | `reverse_geocode()`                        |
-| OpenWeatherMap   | GET    | `/data/2.5/weather`          | Current weather at coordinates             | `get_weather()`, `get_weather_by_coords()` |
-| Open Notify      | GET    | `/iss-now.json`              | Current ISS position and timestamp         | `get_iss_location()`                       |
-| Launch Library 2 | GET    | `/launch/upcoming/`          | Upcoming rocket launches                   | `get_upcoming_launches()`                  |
+| API              | Method | Endpoint                                        | Purpose                                       | Function in code                           |
+|------------------|--------|-------------------------------------------------|-----------------------------------------------|--------------------------------------------|
+| Webex            | GET    | `/rooms`                                        | List the rooms the bot can access             | `get_rooms()`                              |
+| Webex            | GET    | `/people/me`                                    | Get the bot's display name                    | `get_bot_name()`                           |
+| Webex            | GET    | `/messages?roomId=...&max=1&mentionedPeople=me` | Read the latest message that mentions the bot | `get_latest_message()`                     |
+| Webex            | POST   | `/messages`                                     | Send a reply to the room                      | `send_message()`                           |
+| OpenWeatherMap   | GET    | `/geo/1.0/direct`                               | City name to latitude and longitude           | `get_city_coordinates()`                   |
+| OpenWeatherMap   | GET    | `/geo/1.0/reverse`                              | ISS coordinates to nearest place name         | `reverse_geocode()`                        |
+| OpenWeatherMap   | GET    | `/data/2.5/weather`                             | Current weather at coordinates                | `get_weather()`, `get_weather_by_coords()` |
+| Open Notify      | GET    | `/iss-now.json`                                 | Current ISS position and timestamp            | `get_iss_location()`                       |
+| Launch Library 2 | GET    | `/launches/upcoming/`                           | Upcoming rocket launches                      | `get_upcoming_launches()`                  |
 
 **How the bot interacts with the APIs** The `/weather` commands a chain of two calls. The bot first sends the city name to the geocoding endpoint to get the coordinates. It then sends them to the weather endpoint. The `/iss` command chains three calls: open-notify gives the ISS position, reverse geocoding turns it into a place name, the weather endpoint gives weather conditions at that place. Replies are sent with a `POST` that contains a JSON body
 
