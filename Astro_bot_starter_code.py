@@ -1,8 +1,8 @@
 #Contains partially completed code with sections for you to complete
 #IT IS MANDATORY TO USE THE RESOURCE PROVIDED
-#The starter code is structured into functions and modules. You are required to complete the missing sections while maintaining this modular design.  Further step by step instructions can be found in the appendix A of this assignment brief. 
+#The starter code is structured into functions and modules. You are required to complete the missing sections while maintaining this modular design.  Further step-by-step instructions can be found in the appendix A of this assignment brief.
 #For extended features implement it within the existing modular structure. The new feature must be triggered using a new command (e.g., /stars, /moon, /sky) and follow the same approach 
-#Use Git for version control. Maintain a repository on GitHub to track your project’s progress and changes. Ensure regular commits for each step with meaningful messages that document your step by stepdevelopment process.
+#Use Git for version control. Maintain a repository on GitHub to track your project’s progress and changes. Ensure regular commits for each step with meaningful messages that document your step-by-step development process.
 # =========================
 # REQUIRED LIBRARIES
 # =========================
@@ -241,6 +241,63 @@ def format_weather(weather, location_name=None):
     )
 
 # =========================
+# Launch Functions
+# =========================
+
+LAUNCH_CACHE = {"time": 0, "text": None}
+LAUNCH_CACHE_SECONDS = 600
+
+def format_launch(launch):
+    name = launch.get("name", "Unknown launch")
+    status = (launch.get("status") or {}).get("name", "Unknown")
+    provider = (launch.get("launch_service_provider") or {}).get("name", "Unknown provider")
+
+    pad = launch.get("pad") or {}
+    pad_name = pad.get("name", "Unknown pad")
+    location = (pad.get("location") or {}).get("name", "")
+    place = f"{pad_name}, {location}" if location else pad_name
+
+    try:
+        when = {
+            datetime.fromisoformat(launch["net"].replace("Z", "+00:00")).astimezone().strftime('%d/%m/%Y %H:%M %Z')
+        }
+    except (KeyError, AttributeError, ValueError):
+        when = "TBD"
+
+    return (
+        f"{name}\n"
+        f"When (NET): {when}\n"
+        f"Provider: {provider}\n"
+        f"Pad: {place}"
+    )
+
+def get_upcoming_launches():
+    now = time.time()
+    if LAUNCH_CACHE["text"] and now - LAUNCH_CACHE["time"] < LAUNCH_CACHE_SECONDS:
+        return LAUNCH_CACHE["text"]
+
+    url = "https://ll.thespacedevs.com/2.3.0/launch/upcoming/"
+    params = {"limit": 5}
+
+    try:
+        response = requests.get(url, params=params, timeout=10)
+        response.raise_for_status()
+        results = response.json().get("results", [])
+    except (requests.RequestException, ValueError):
+        if LAUNCH_CACHE["text"]:
+            return LAUNCH_CACHE["text"] + "\n(Live update failed, showing cached data)"
+        return "Failed to get upcoming launches (the API may be rate limited, try again later)"
+
+    if not results:
+        return "No upcoming launches found"
+
+    text = "Upcoming rocket launches:\n\n" + "\n\n".join(format_launch(i) for i in results)
+
+    LAUNCH_CACHE["time"] = now
+    LAUNCH_CACHE["text"] = text
+    return text
+
+# =========================
 # MAIN BOT LOGIC
 # =========================
 def main():
@@ -293,7 +350,7 @@ def main():
                 arg = arg.strip()
 
                 if cmd == "/help":
-                    send_message(token, room_id, f"@{bot_name} /weather <city>\n@{bot_name} /iss\n@{bot_name} /help\n@{bot_name} /quit")
+                    send_message(token, room_id, f"@{bot_name} /weather <city>\n@{bot_name} /iss\n@{bot_name}  @{bot_name} /launch\n /help\n@{bot_name} /quit")
 
                 elif cmd == "/weather":
                     if not arg:
@@ -302,6 +359,8 @@ def main():
                         send_message(token, room_id, get_weather(arg, weather_key))
                 elif cmd == "/iss":
                     send_message(token, room_id, get_iss_location(weather_key))
+                elif cmd == "/launch":
+                    send_message(token, room_id, get_upcoming_launches())
                 elif cmd == "/quit":
                     send_message(token, room_id, "AstroBot shutting down.")
                     break
