@@ -177,18 +177,16 @@ This investigation sheet helps you gather key technical information from the thr
 
 ##  Extended Feature API ( 3 marks)
 
-| Criteria                                 | Details                                   |
-|------------------------------------------|-------------------------------------------|
-| API Provider                             | ' The Space Devs, **Launch Library 2**  ' |
-| API Base URL                             | `https://ll.thespacedevs.com/2.2.0/`      |
-| Endpoint                                 | `launch/upcoming/`                        |
-| Authentication method                    | `None`                                    |
-| Required query parameters                | `None`                                    |
-| Sample JSON response (formatted example) | See Below                                 |
-```
-### Sample JSON Response
+| Criteria                                 | Details                                 |
+|------------------------------------------|-----------------------------------------|
+| API Provider                             |  The Space Devs, **Launch Library 2**   |
+| API Base URL                             | `https://ll.thespacedevs.com/2.2.0/`    |
+| Endpoint                                 | `launch/upcoming/`                      |
+| Authentication method                    | `None`                                  |
+| Required query parameters                | `None`                                  |
+| Sample JSON response (formatted example) | See Below                               |
 
-### Sample JSON Response (abridged)
+### Sample JSON Response
  
 ```json
 {
@@ -219,9 +217,6 @@ This investigation sheet helps you gather key technical information from the thr
 }
 ```
 
-```
-|
-
 --- 
 
 ##  Evaluation – Web Architecture, MVC Design & Security 
@@ -237,11 +232,11 @@ This investigation sheet helps you gather key technical information from the thr
 | Open Notify               | Current ISS position and timestamp                      |
 | Launch Library 2          | Upcoming rocket launches (extended feature)             |
 
-**Data Flow:** The bot does not recieve messages directrrly, instead it polls Webex every 5 seconds.
+**Data Flow:** The bot does not receive messages directly, instead it polls Webex every 5 seconds.
 
-1. The user types a commadn into the Webex space. e.g. `@AstroBot /weather London`
+1. The user types a command into the Webex space. e.g. `@Astro /weather London`
 2. The Webex server stores the message
-3. AstroBot sends `GET /messages` and recives the latest message as a json
+3. AstroBot sends `GET /messages` and receives the latest message as a json
 4. The controller pareses the command calls the matching function
 5. That function sends `GET` requests to the relevant API servers 
 6. The bot formats the JSON into readable text and sends `POST /messages` to Webex
@@ -251,7 +246,28 @@ Include a **simple block diagram** to illustrate this interaction.
 
 ####  Security Considerations: (3 marks )
 
-**Secure handeling of API keys and tokens:** Credentials are not written into the code. They are loaded from a `.env` file with `python-dotenv` or entered manually at startup, so they can stay out of the repo. The `.env` file is listed in the `.gtignore` so it is never commited to Github. The bot also stops if credentials are missing, rather than sending requests that would fail with a 401.
+**Secure handling of API keys and tokens:** Credentials are not written into the code. They are loaded from a `.env` file with `python-dotenv` or entered manually at startup, so they can stay out of the repo. The `.env` file is listed in the `.gtignore` so it is never commited to Github. The bot also stops if credentials are missing, rather than sending requests that would fail with a 401.
+
+```python
+load_dotenv()
+token = os.getenv("WEBEX_TOKEN")
+weather_key = os.getenv("API_KEY")
+ 
+if not token or not weather_key:
+    print("Missing Webex token or Weather API key")
+    return
+```
+***API rate limiting:*** 
+
+- The polling loops always ends with `time.sleep(5)` so the bot doesn't get rate limited form Webex
+- The bot only calls the weather, iSS and launch APIs when a vlaid command is recieved not on evedry poll
+- `/launch` is cached for 10 minutes, because the launch Library 2 allows only 15 requests per hour. If a later request fails, the bot falls back to the chached text
+
+```python
+LAUNCH_CACHE_SECONDS = 600
+if LAUNCH_CACHE["text"] and now - LAUNCH_CACHE["time"] < LAUNCH_CACHE_SECONDS:
+    return LAUNCH_CACHE["text"]
+```
 
 ---
 
