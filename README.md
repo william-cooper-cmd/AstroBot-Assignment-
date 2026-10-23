@@ -170,8 +170,7 @@ This investigation sheet helps you gather key technical information from the thr
 | Library used                     | `datetime`                          |
 | Function used to convert epoch   | `.fromtimestamp`                    |
 | Sample code to convert timestamp | `datetime.fromtimestamp(timestamp)` |
-
-| Output (human-readable time) | `strftime("%d/%m/%Y %H:%M:%S %Z")` |
+| Output (human-readable time)     | `strftime("%d/%m/%Y %H:%M:%S %Z")`  |
 
 ---
 
@@ -260,7 +259,7 @@ if not token or not weather_key:
 ***API rate limiting:*** 
 
 - The polling loops always ends with `time.sleep(5)` so the bot doesn't get rate limited form Webex
-- The bot only calls the weather, iSS and launch APIs when a vlaid command is recieved not on evedry poll
+- The bot only calls the weather, ISS and launch APIs when a vlaid command is recieved not on evedry poll
 - `/launch` is cached for 10 minutes, because the launch Library 2 allows only 15 requests per hour. If a later request fails, the bot falls back to the chached text
 
 ```python
@@ -320,6 +319,19 @@ temp = weather.get('main', {}).get('temp', 'N/A')   # weather: nested dict
 
 `format_weather()` and `format_launch()` then convert the extracted values into a readable string, including the stargazing verdict, which combines cloud cover, visibility, humidity and wind speed.
 
+#### Security Considerations: (2 marks)
+
+- **Checking status codes:** each request calls `response.raise_for_status()` inside a `try/except request.RequestExecption` so 4xx and 5xx errors are caught instead of being parsed as valid data
+- **Handling invalid or unexpefted responses** a failed request returns `None`, an empty list or a clear message, never a crash. Empty results are cheked (`if not data`, `if not location`) and `.get()` with default values is used so a missing field such as `visibility` over the ocean does not raise a `KeyError`
+- **Avoiding excessive API calls` every request has a `timeout=10` so it cannot hang the bot, the loop sleeps 5 seconds between polls and `/launch` results are chached for 10 minuties
+
+```python
+try:
+    response = requests.get(url, params=params, timeout=10)
+    response.raise_for_status()
+except requests.RequestException:
+    return None
+```
 
 ---
 
