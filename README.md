@@ -3,7 +3,7 @@
 **Total Marks: 40**  
 **TASK 1: Collect Required API Documentation**
 
-This investigation sheet helps you gather key technical information from the three APIs required for the Space Bot project: **Webex Messaging API**, **ISS Current Location API**, **Weather API** and a **Geocoding API** , plus the Python time module. Also furhter investigate the application of Web Architecture and MVC design pattern in development of the Bot
+This investigation sheet helps you gather key technical information from the three APIs required for the Space Bot project: **Webex Messaging API**, **ISS Current Location API**, **Weather API** and a **Geocoding API** , plus the Python time module. Also, further investigate the application of Web Architecture and MVC design pattern in development of the Bot
 
 ---
 
@@ -222,7 +222,7 @@ This investigation sheet helps you gather key technical information from the thr
 
 ###  Web Architecture – Client–Server Model (3 marks)
 
-**Client:** AstroBot is a program that acts as a HTTP client. It sends request using the `requests` library. The user interacts through the Webex app, which is also a client of the Webex server.
+**Client:** AstroBot is a program that acts as an HTTP client. It sends request using the `requests` library. The user interacts through the Webex app, which is also a client of the Webex server.
 
 | Server                    | Role in the bot                                         |
 |---------------------------|---------------------------------------------------------|
@@ -245,7 +245,7 @@ Include a **simple block diagram** to illustrate this interaction.
 
 ####  Security Considerations: (3 marks )
 
-**Secure handling of API keys and tokens:** Credentials are not written into the code. They are loaded from a `.env` file with `python-dotenv` or entered manually at startup, so they can stay out of the repo. The `.env` file is listed in the `.gtignore` so it is never commited to Github. The bot also stops if credentials are missing, rather than sending requests that would fail with a 401.
+**Secure handling of API keys and tokens:** Credentials are not written into the code. They are loaded from a `.env` file with `python-dotenv` or entered manually at startup, so they can stay out of the repo. The `.env` file is listed in the `.gtignore` so it is never commited to GitHub. The bot also stops if credentials are missing, rather than sending requests that would fail with a 401.
 
 ```python
 load_dotenv()
@@ -259,8 +259,8 @@ if not token or not weather_key:
 ***API rate limiting:*** 
 
 - The polling loops always ends with `time.sleep(5)` so the bot doesn't get rate limited form Webex
-- The bot only calls the weather, ISS and launch APIs when a vlaid command is recieved not on evedry poll
-- `/launch` is cached for 10 minutes, because the launch Library 2 allows only 15 requests per hour. If a later request fails, the bot falls back to the chached text
+- The bot only calls the weather, ISS and launch APIs when a valid command is received not on every poll
+- `/launch` is cached for 10 minutes, because the launch Library 2 allows only 15 requests per hour. If a later request fails, the bot falls back to the cached text
 
 ```python
 LAUNCH_CACHE_SECONDS = 600
@@ -272,9 +272,9 @@ if LAUNCH_CACHE["text"] and now - LAUNCH_CACHE["time"] < LAUNCH_CACHE_SECONDS:
 
 - The bot only reacts to messages that @ it followed by `/`. Anything else is ignored.
 - Text is normalised with `.lower().strip()` and splits with `partition(" ") into a command and an argument
-- The command is compared agaist a fixed list (`/help`, `/weather`, `/iss`, `/launch`, `/quit`) using `if/elif`. Unknown inputs produce and "Unknown command" message
+- The command is compared against a fixed list (`/help`, `/weather`, `/iss`, `/launch`, `/quit`) using `if/elif`. Unknown inputs produce and "Unknown command" message
 - An empty argument for `/weather` returns a usage message instead of calling the API
-- The city name is passed through the `params` dicitionary of `requests`, which URL-encodes it, so user text cannot alter the structure of the request URL
+- The city name is passed through the `params` dictionary of `requests`, which URL-encodes it, so user text cannot alter the structure of the request URL
 
 ```python
 command = message_text[len(bot_name):].strip()
@@ -287,7 +287,7 @@ if cmd == "/weather" and not arg:
 
 ###  RESTful API Usage in Your Application (3 marks )
 
-**HTTP methods** Astro bot uses `GET` to read data and `POST` to create data. All requests are stateless: each one carries its own credetials and the server keeps no session for the bot
+**HTTP methods** Astro bot uses `GET` to read data and `POST` to create data. All requests are stateless: each one carries its own credentials and the server keeps no session for the bot
 
 | API              | Method | Endpoint                     | Purpose                                    | Function in code                           |
 |------------------|--------|------------------------------|--------------------------------------------|--------------------------------------------|
@@ -301,7 +301,7 @@ if cmd == "/weather" and not arg:
 | Open Notify      | GET    | `/iss-now.json`              | Current ISS position and timestamp         | `get_iss_location()`                       |
 | Launch Library 2 | GET    | `/launch/upcoming/`          | Upcoming rocket launches                   | `get_upcoming_launches()`                  |
 
-**How the bot ineracts with the APIs** The `/weather` cmmandis a chain of two calls. The bot first sends the city name to the gecoding endpoint to get the coordiantes. It then sends them to the weather endpoint. The `/iss` command chains three calls: open-notify gives the ISS position, reverse geocoding turns it into a place name, the weather endpoint gives weather conditions at that place. Replies are sent with a `POST` that contains a JSON body
+**How the bot interacts with the APIs** The `/weather` commands a chain of two calls. The bot first sends the city name to the geocoding endpoint to get the coordinates. It then sends them to the weather endpoint. The `/iss` command chains three calls: open-notify gives the ISS position, reverse geocoding turns it into a place name, the weather endpoint gives weather conditions at that place. Replies are sent with a `POST` that contains a JSON body
 
 ```python
 headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
@@ -322,8 +322,8 @@ temp = weather.get('main', {}).get('temp', 'N/A')   # weather: nested dict
 #### Security Considerations: (2 marks)
 
 - **Checking status codes:** each request calls `response.raise_for_status()` inside a `try/except request.RequestExecption` so 4xx and 5xx errors are caught instead of being parsed as valid data
-- **Handling invalid or unexpefted responses** a failed request returns `None`, an empty list or a clear message, never a crash. Empty results are cheked (`if not data`, `if not location`) and `.get()` with default values is used so a missing field such as `visibility` over the ocean does not raise a `KeyError`
-- **Avoiding excessive API calls` every request has a `timeout=10` so it cannot hang the bot, the loop sleeps 5 seconds between polls and `/launch` results are chached for 10 minuties
+- **Handling invalid or unexpected responses** a failed request returns `None`, an empty list or a clear message, never a crash. Empty results are checked (`if not data`, `if not location`) and `.get()` with default values is used so a missing field such as `visibility` over the ocean does not raise a `KeyError`
+- **Avoiding excessive API calls` every request has a `timeout=10` so it cannot hang the bot, the loop sleeps 5 seconds between polls and `/launch` results are cached for 10 minutes
 
 ```python
 try:
@@ -348,13 +348,13 @@ except requests.RequestException:
 
 ### 📝 Reflection and Evaluation ( 8 marks )
 
-AstroBot meets the club's core needs. A member can ask for the weather in any city, see where the ISS is with the weather beneah it, and check upcoming laucnhes, all inside the Webex space they already use. The startgazing check is a simple, but it turns rawdata into an answer a member can act on. The extended `/launch` command gives member something to look forward to.
+AstroBot meets the club's core needs. A member can ask for the weather in any city, see where the ISS is with the weather beneath it, and check upcoming launches, all inside the Webex space they already use. The stargazing check is a simple, but it turns rawdata into an answer a member can act on. The extended `/launch` command gives member something to look forward to.
 
-Splitting the code into small functions worked well. Each API has its own fetch function and formating is kept arpart, so i could fix and test one section without breaking the others. Adding `/launch` took one function, one `elif` branch and one help line,m  which shows the strucuture is easy to extend.
+Splitting the code into small functions worked well. Each API has its own fetch function and formating is kept apart, so I could fix and test one section without breaking the others. Adding `/launch` took one function, one `elif` branch and one help line,m  which shows the structure is easy to extend.
 
-The main securtyrisks were exposed credentials, rate limits. Keys live in a `.env` file excluded from Git, request use timoute and status checks, resutls are cached and commands are matched against a fixed list so unknown input only produces a unknown command message.
+The main security risks were exposed credentials, rate limits. Keys live in a `.env` file excluded from Git, request use timeout and status checks, results are cached and commands are matched against a fixed list so unknown input only produces an unknown command message.
 
-Getting the latest message could use a Webex webhook instead of polling, which avoids missed messages when two commands arrive within five seconds. I would split the code into sperate modew, view and controller modules, add unit tests with mocked API responses.
+Getting the latest message could use a Webex webhook instead of polling, which avoids missed messages when two commands arrive within five seconds. I would split the code into separate model, view and controller modules, add unit tests with mocked API responses.
 
 ---
 
