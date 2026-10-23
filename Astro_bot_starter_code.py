@@ -45,24 +45,22 @@ def get_rooms(token):
         "Accept": "application/json"
     }
     try:
-        response = requests.get(url,headers=headers, timeout=10)
+        response = requests.get(url, headers=headers, timeout=10)
         response.raise_for_status()
-    except requests.RequestException:
+        return response.json().get("items", [])
+    except (requests.RequestException, ValueError, AttributeError):
         return []
-
-    return response.json().get("items", [])
-
 
 def print_rooms(rooms):
     for room in rooms:
-        print(f"name: {room['title']}, type: {room['type']}")
+        print(f"name: {room.get('title', 'Unknown')}, type: {room.get('type', 'Unknown')}")
 
 
 def select_room(rooms):
     while True:
         name = input("Enter room name: ")
         for room in rooms:
-            if name.lower() in room["title"].lower():
+            if name.lower() in room.get("title", "").lower():
                 print(f"selected room is {room['title']}")
                 return room["id"]
         print("Selected room not found")
@@ -79,10 +77,9 @@ def get_latest_message(token, room_id):
     try:
         response = requests.get(url, params=params, headers=headers, timeout=10)
         response.raise_for_status()
-    except requests.RequestException:
+        data = response.json().get("items", [])
+    except (requests.RequestException, ValueError, AttributeError):
         return None, None
-
-    data = response.json().get("items", [])
 
     if not data:
         return None, None
@@ -102,9 +99,12 @@ def send_message(token, room_id, message):
         "text": message
     }
     try:
-        requests.post(url, headers=headers, data=json.dumps(data), timeout=10).raise_for_status()
+        response = requests.post(url, headers=headers, data=json.dumps(data), timeout=10)
+        response.raise_for_status()
     except requests.RequestException:
-        return "Failed to send message"
+        return False
+
+    return True
 
 # =========================
 # WEATHER FUNCTIONS
@@ -118,12 +118,11 @@ def get_city_coordinates(city, api_key):
     try:
         response = requests.get(url, params=params, timeout=10)
         response.raise_for_status()
-    except requests.RequestException:
+        data = response.json()
+    except (requests.RequestException, ValueError, AttributeError):
         return None
 
-    data = response.json()
     return data[0] if data else None
-
 
 def get_weather(city, api_key):
     location = get_city_coordinates(city, api_key)
@@ -142,10 +141,9 @@ def get_weather(city, api_key):
     try:
         response = requests.get(url, params=params, timeout=10)
         response.raise_for_status()
-    except requests.RequestException:
+        weather = response.json()
+    except (requests.RequestException, ValueError):
         return f"Failed to get weather of {city.title()}"
-
-    weather = response.json()
 
     return format_weather(weather, city.title())
 
@@ -164,10 +162,9 @@ def reverse_geocode(lat, lon, api_key):
     try:
         response = requests.get(url, params=params, timeout=10)
         response.raise_for_status()
-    except requests.RequestException:
+        data = response.json()
+    except (requests.RequestException, ValueError):
         return None
-
-    data = response.json()
     return data[0] if data else None
 
 
@@ -181,18 +178,23 @@ def get_iss_location(api_key):
         lat = data["iss_position"]["latitude"]
         lon = data["iss_position"]["longitude"]
         timestamp = data["timestamp"]
-    except (requests.RequestException, KeyError, ValueError):
+        iss_time = (
+            datetime.fromtimestamp(timestamp, timezone.utc)
+            .astimezone()
+            .strftime('%d/%m/%Y %H:%M:%S %Z')
+        )
+    except (requests.RequestException, KeyError, TypeError, ValueError, OverflowError, OSError):
         return "Failed to get ISS location"
 
-    location = reverse_geocode(lat, lon, api_key)
 
     place = "Over Ocean / No Nearby City"
 
+    location = reverse_geocode(lat, lon, api_key)
     if location:
-        place = location['name']
+        place = location.get('name', place)
 
     weather_info = get_weather_by_coords(lat, lon, api_key, place)
-    return f"ISS Position (Lat: {lat}, Lon: {lon}) at {datetime.fromtimestamp(data['timestamp'], timezone.utc).astimezone().strftime('%d/%m/%Y %H:%M:%S %Z')}:\n{weather_info}"
+    return f"ISS Position (Lat: {lat}, Lon: {lon}) at {iss_time}:\n{weather_info}"
 
 def get_weather_by_coords(lat, lon, api_key, location_name=None):
     url = 'https://api.openweathermap.org/data/2.5/weather'
@@ -206,15 +208,15 @@ def get_weather_by_coords(lat, lon, api_key, location_name=None):
     try:
         response = requests.get(url, params=params, timeout=10)
         response.raise_for_status()
-    except requests.RequestException:
+        weather = response.json()
+    except (requests.RequestException, ValueError):
         return "Failed to get weather by coordinates"
 
-    weather = response.json()
     return format_weather(weather, location_name)
 
 
+
 def format_weather(weather, location_name=None):
-    """Formats the raw weather JSON data into a readable string."""
     country = weather.get('sys', {}).get('country', '')
     location_parts = [part for part in [location_name, country] if part]
     if location_parts:
@@ -223,27 +225,38 @@ def format_weather(weather, location_name=None):
     else:
         prefix = "Current weather (Open Ocean): "
 
-    clouds = weather.get('clouds', {}).get('all', 100)
-    visibility = weather.get('visibility', 0)
-    humidity = weather.get('main', {}).get('humidity', 100)
-    wind_speed = weather.get('wind', {}).get('speed', 99)
-    temp = weather.get('main', {}).get('temp', 'N/A')
-    desc = (weather.get('weather') or [{}])[0].get('description', 'unknown')
+    clouds = weather.get('clouds', {}).get('all')
+    visibility = weather.get('visibility')
+    humidity = weather.get('main', {}).get('humidity')
+    wind_speed = weather.get('wind', {}).get('speed')
+    temp = weather.get('main', {}).get('temp')
+    desc = (weather.get('weather') or [{}])[0].get('description')
 
-    is_good_stargazing = clouds <= 15 and visibility >= 10000 and humidity < 60 and wind_speed < 5
-
+    readings = [clouds, visibility, humidity, wind_speed]
+    is_good_stargazing = (
+            None not in readings and
+            clouds <= 15 and
+            visibility >= 10000 and
+            humidity < 60 and
+            wind_speed < 5
+    )
     stargazing_status = "Good for stargazing" if is_good_stargazing else "Not good for stargazing"
+
+    temp_text = f"{temp}°C" if temp is not None else "N/A"
+    desc_text = desc if desc else "Unknown"
+    humidity_text = f"{humidity}%" if humidity is not None else "N/A"
+    wind_text = f"{wind_speed} m/s" if wind_speed is not None else "N/A"
 
     return (
         f"{prefix}"
-        f"{temp}°C, {desc} | "
-        f"humidity: {humidity}%, "
-        f"wind speed: {wind_speed} m/s. "
+        f"{temp_text}, {desc_text} | "
+        f"humidity: {humidity_text}, "
+        f"wind speed: {wind_text}. "
         f"{stargazing_status}"
     )
 
 # =========================
-# Launch Functions
+# LAUNCH FUNCTIONS
 # =========================
 
 LAUNCH_CACHE = {"time": 0, "text": None}
@@ -275,14 +288,14 @@ def get_upcoming_launches():
     if LAUNCH_CACHE["text"] and now - LAUNCH_CACHE["time"] < LAUNCH_CACHE_SECONDS:
         return LAUNCH_CACHE["text"]
 
-    url = "https://ll.thespacedevs.com/2.3.0/launches/upcoming"
+    url = "https://ll.thespacedevs.com/2.3.0/launches/upcoming/"
     params = {"limit": 5}
 
     try:
         response = requests.get(url, params=params, timeout=10)
         response.raise_for_status()
         results = response.json().get("results", [])
-    except (requests.RequestException, ValueError):
+    except (requests.RequestException, ValueError, AttributeError):
         if LAUNCH_CACHE["text"]:
             return LAUNCH_CACHE["text"] + "\n(Live update failed, showing cached data)"
         return "Failed to get upcoming launches (the API may be rate limited, try again later)"
@@ -299,6 +312,34 @@ def get_upcoming_launches():
 # =========================
 # MAIN BOT LOGIC
 # =========================
+
+def handle_command(cmd, arg, bot_name, weather_key):
+    """Run one bot command and return (reply_text, should_quit)."""
+    if cmd == "/help":
+        return (
+            f"@{bot_name} /weather <city>\n"
+            f"@{bot_name} /iss\n"
+            f"@{bot_name} /launch\n"
+            f"@{bot_name} /help\n"
+            f"@{bot_name} /quit"
+        ), False
+
+    if cmd == "/weather":
+        if not arg:
+            return f"Usage: @{bot_name} /weather <city>", False
+        return get_weather(arg, weather_key), False
+
+    if cmd == "/iss":
+        return get_iss_location(weather_key), False
+
+    if cmd == "/launch":
+        return get_upcoming_launches(), False
+
+    if cmd == "/quit":
+        return "AstroBot shutting down.", True
+
+    return f"Unknown command. Use @{bot_name} /help", False
+
 def main():
 
     token = get_webex_token()
@@ -317,16 +358,11 @@ def main():
         print("No rooms found" )
         return
 
-    headers = {"Authorization": f"Bearer {token}",}
-    try:
-        response = requests.get("https://webexapis.com/v1/people/me", headers=headers, timeout=10)
-        response.raise_for_status()
-    except requests.RequestException:
-        print("Failed to get bots name")
-        return
+    bot_name = get_bot_name(token)
 
-    data = response.json()
-    bot_name = (data['displayName'].split(maxsplit=1)[0]).lower()
+    if not bot_name:
+        print("Failed to get bot's name")
+        return
 
     print_rooms(rooms)
     room_id = select_room(rooms)
@@ -348,25 +384,33 @@ def main():
                 cmd, _, arg = command.partition(" ")
                 arg = arg.strip()
 
-                if cmd == "/help":
-                    send_message(token, room_id, f"@{bot_name} /weather <city>\n@{bot_name} /iss\n@{bot_name} /launch\n@{bot_name} /help\n@{bot_name} /quit")
+                reply, should_quit = handle_command(cmd, arg, bot_name, weather_key)
 
-                elif cmd == "/weather":
-                    if not arg:
-                        send_message(token, room_id, f"Usage @{bot_name} /weather <city>")
-                    else:
-                        send_message(token, room_id, get_weather(arg, weather_key))
-                elif cmd == "/iss":
-                    send_message(token, room_id, get_iss_location(weather_key))
-                elif cmd == "/launch":
-                    send_message(token, room_id, get_upcoming_launches())
-                elif cmd == "/quit":
-                    send_message(token, room_id, "AstroBot shutting down.")
+                if not send_message(token, room_id, reply):
+                    print("Warning: failed to send reply to Webex")
+
+                if should_quit:
                     break
-                else:
-                    send_message(token, room_id, f"Unknown command. Use @{bot_name} /help")
 
         time.sleep(5)
+
+def get_bot_name(token):
+    url = "https://webexapis.com/v1/people/me"
+    headers = {"Authorization": f"Bearer {token}"}
+
+    try:
+        response = requests.get(url, headers=headers, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+    except (requests.RequestException, ValueError):
+        return None
+
+    if not isinstance(data, dict):
+        return None
+
+    # split() on an empty or missing name gives an empty list, so check it first
+    words = str(data.get("displayName", "")).split(maxsplit=1)
+    return words[0].lower() if words else None
 
 
 if __name__ == '__main__':
