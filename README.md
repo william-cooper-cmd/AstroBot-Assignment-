@@ -337,14 +337,12 @@ except requests.RequestException:
 
 ###  MVC Design Pattern in AstroBot (3 Marks)
 
-Explain how the **Model–View–Controller (MVC)** pattern applies to your solution:
-Provide a short example based on your implementation
+| Component      | Description and Example (Relate to your Bot)                                                                                                                                                                                                                                                                                                                                                   |
+|----------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Model**      | The model fetches and holds the data, and has no knowledge of how it is displayed. It contains the functions that call the APIs and return the data: `get_rooms()`, `get_city_coordinates()`, `reverse_geocode()`, `get_weather_by_coords()`, `get_iss_location()` and `get_upcoming_launches()`. Example: `get_city_coordinates("london", key)` returns the geocoding result as a dictionary. |
+| **View**       | The view decides how data is presented to the user. `format_weather()` and `format_launch()` turn raw JSON values into readable text, `print_rooms()` shows the room list in the console, and `send_message()` delivers the output to Webex. Example: `format_weather()` produces `Current weather in London, GB: 12°C, light rain \| humidity: 80%... Not good for stargazing`.               |
+| **Controller** | The controller receives user input and decides which model and view to use. `main()` polls for the latest message, parses it with `partition(" ")`, and routes it with `if/elif` to the correct function. Example: when the command is `/launch`, the controller calls `get_upcoming_launches()` and passes the result to `send_message()`.                                                    |
 
-| Component      | Description and Example (Relate to your Bot) |
-|----------------|----------------------------------------------|
-| **Model**      |                                              |
-| **View**       |                                              |
-| **Controller** |                                              |
 
 ---
 
