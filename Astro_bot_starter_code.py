@@ -55,7 +55,7 @@ def get_rooms(token):
 
 def print_rooms(rooms):
     for room in rooms:
-        print(room["id"], room["title"])
+        print(f"name: {room['title']}, type: {room['type']}")
 
 
 def select_room(rooms):
@@ -124,7 +124,7 @@ def get_weather(city, api_key):
     location = get_city_coordinates(city, api_key)
 
     if not location:
-        return f"{city} was not found"
+        return f"{city.title()} was not found"
 
     url = 'https://api.openweathermap.org/data/2.5/weather'
     params = {
@@ -137,11 +137,11 @@ def get_weather(city, api_key):
     response = requests.get(url, params=params)
 
     if response.status_code != 200:
-        return f"Failed to get weather for {city}"
+        return f"Failed to get weather for {city.title()}"
 
     weather = response.json()
 
-    return format_weather(weather, city)
+    return format_weather(weather, city.title())
 
 # =========================
 # ISS FUNCTIONS
@@ -185,7 +185,7 @@ def get_iss_location(api_key):
         place = location['name']
 
     weather_info = get_weather_by_coords(lat, lon, api_key, place)
-    return f"ISS Position (Lat: {lat}, Lon: {lon}) at {datetime.fromtimestamp(data['timestamp'], timezone.utc).astimezone().strftime("%d/%m/%Y %H:%M:%S %Z")}:\n{weather_info}"
+    return f"ISS Position (Lat: {lat}, Lon: {lon}) at {datetime.fromtimestamp(data['timestamp'], timezone.utc).astimezone().strftime('%d/%m/%Y %H:%M:%S %Z')}:\n{weather_info}"
 
 def get_weather_by_coords(lat, lon, api_key, location_name=None):
     url = 'https://api.openweathermap.org/data/2.5/weather'
@@ -208,7 +208,12 @@ def get_weather_by_coords(lat, lon, api_key, location_name=None):
 def format_weather(weather, location_name=None):
     """Formats the raw weather JSON data into a readable string."""
     country = weather.get('sys', {}).get('country', '')
-    prefix = f"Current weather in {location_name}, {country}: " if location_name else f"Current weather: "
+    location_parts = [part for part in [location_name, country] if part]
+    if location_parts:
+        place = ", ".join(location_parts)
+        prefix = f"Current weather in {place}: "
+    else:
+        prefix = "Current weather (Open Ocean): "
 
     is_good_stargazing = (
         weather['clouds']['all'] <= 15 and
@@ -247,7 +252,7 @@ def main():
     headers = {"Authorization": f"Bearer {token}",}
     response = requests.get("https://webexapis.com/v1/people/me", headers=headers)
     data = response.json()
-    bot_name = data['displayName']
+    bot_name = data['displayName'].lower()
 
     print_rooms(rooms)
     room_id = select_room(rooms)
@@ -264,35 +269,35 @@ def main():
 
             message_text = message_text.lower().strip()
 
-            if not message_text.startswith('astro /'):
+            if not message_text.startswith(f'{bot_name} /'):
                 continue
 
-            if message_text == "astro /help":
+            if message_text == f"{bot_name} /help":
                 send_message(
                     token,
                     room_id,
-                    "@astro /weather <city>\n/iss\n/help\n/quit"
+                    f"@{bot_name} /weather <city>\n@{bot_name} /iss\n@{bot_name} /help\n@{bot_name} /quit"
                 )
 
-            elif message_text.startswith('astro /weather'):
+            elif message_text.startswith(f'{bot_name} /weather'):
 
-                parts = message_text.split(maxsplit=2)
+                parts = message_text.split('/weather', 1)
 
-                if len(parts) < 3:
+                if len(parts[1]) == 0:
                     send_message(token, room_id, "Usage: /weather <city>")
                 else:
-                    city = parts[2]
-                    send_message(token, room_id, get_weather(city, weather_key))
+                    city = parts[1]
+                    send_message(token, room_id, get_weather(city.strip().lower(), weather_key))
 
-            elif message_text == "astro /iss":
+            elif message_text == f"{bot_name} /iss":
                 send_message(token, room_id, get_iss_location(weather_key))
 
-            elif message_text == "astro /quit":
+            elif message_text == f"{bot_name} /quit":
                 send_message(token, room_id, "AstroBot shutting down.")
                 break
 
             else:
-                send_message(token, room_id, "Unknown command. Use /help")
+                send_message(token, room_id, f"Unknown command. Use @{bot_name} /help")
 
         time.sleep(5)
 
