@@ -44,10 +44,10 @@ def get_rooms(token):
         "Authorization": f"Bearer {token}",
         "Accept": "application/json"
     }
-    response = requests.get(url,headers=headers)
-
-    if response.status_code != 200:
-        print("Error fetching rooms:", response.status_code)
+    try:
+        response = requests.get(url,headers=headers, timeout=10)
+        response.raise_for_status()
+    except requests.RequestException:
         return []
 
     return response.json().get("items", [])
@@ -76,9 +76,10 @@ def get_latest_message(token, room_id):
         "Accept": "application/json",
     }
 
-    response = requests.get(url, params=params, headers=headers)
-
-    if response.status_code != 200:
+    try:
+        response = requests.get(url, params=params, headers=headers, timeout=10)
+        response.raise_for_status()
+    except requests.RequestException:
         return None, None
 
     data = response.json().get("items", [])
@@ -100,7 +101,10 @@ def send_message(token, room_id, message):
         "roomId": room_id,
         "text": message
     }
-    requests.post(url, headers=headers, data=json.dumps(data))
+    try:
+        requests.post(url, headers=headers, data=json.dumps(data), timeout=10)
+    except requests.RequestException:
+        return "Failed to send message"
 
 # =========================
 # WEATHER FUNCTIONS
@@ -111,9 +115,10 @@ def get_city_coordinates(city, api_key):
         "q": city,
         "limit": 1,
         "appid": api_key}
-    response = requests.get  (url, params=params)
-
-    if response.status_code != 200:
+    try:
+        response = requests.get(url, params=params, timeout=10)
+        response.raise_for_status()
+    except requests.RequestException:
         return None
 
     data = response.json()
@@ -134,10 +139,11 @@ def get_weather(city, api_key):
         "appid": api_key
     }
 
-    response = requests.get(url, params=params)
-
-    if response.status_code != 200:
-        return f"Failed to get weather for {city.title()}"
+    try:
+        response = requests.get(url, params=params, timeout=10)
+        response.raise_for_status()
+    except requests.RequestException:
+        return f"Failed to get weather of {city.title()}"
 
     weather = response.json()
 
@@ -155,9 +161,10 @@ def reverse_geocode(lat, lon, api_key):
         "appid": api_key
     }
 
-    response = requests.get(url, params=params)
-
-    if response.status_code != 200:
+    try:
+        response = requests.get(url, params=params, timeout=10)
+        response.raise_for_status()
+    except requests.RequestException:
         return None
 
     data = response.json()
@@ -167,9 +174,10 @@ def reverse_geocode(lat, lon, api_key):
 def get_iss_location(api_key):
     url = "http://api.open-notify.org/iss-now.json"
 
-    response = requests.get(url, params=None)
-
-    if response.status_code != 200:
+    try:
+        response = requests.get(url, params=None, timeout=10)
+        response.raise_for_status()
+    except requests.RequestException:
         return "Failed to get ISS location"
 
     data = response.json()
@@ -196,10 +204,11 @@ def get_weather_by_coords(lat, lon, api_key, location_name=None):
         "appid": api_key
     }
 
-    response = requests.get(url, params=params)
-
-    if response.status_code != 200:
-        return f"Failed to get weather for coordinates ({lat}, {lon})"
+    try:
+        response = requests.get(url, params=params, timeout=10)
+        response.raise_for_status()
+    except requests.RequestException:
+        return "Failed to get weather by coordinates"
 
     weather = response.json()
     return format_weather(weather, location_name)
@@ -242,6 +251,9 @@ def main():
         "Weather API key",
         os.getenv("API_KEY")
     )
+    if not token or not weather_key:
+        print("Missing Webex token or Weather API key")
+        return
 
     rooms = get_rooms(token)
 
@@ -250,7 +262,13 @@ def main():
         return
 
     headers = {"Authorization": f"Bearer {token}",}
-    response = requests.get("https://webexapis.com/v1/people/me", headers=headers)
+    try:
+        response = requests.get("https://webexapis.com/v1/people/me", headers=headers, timeout=10)
+        response.raise_for_status()
+    except requests.RequestException:
+        print("Failed to get bots name")
+        return
+
     data = response.json()
     bot_name = data['displayName'].lower()
 
@@ -267,37 +285,28 @@ def main():
 
             last_message_id = message_id
 
-            message_text = message_text.lower().strip()
+            message_text = (message_text or "").lower().strip()
 
-            if not message_text.startswith(f'{bot_name} /'):
-                continue
+            if message_text.startswith(f"{bot_name} /"):
+                command = message_text[len(bot_name):].strip()
+                cmd, _, arg = command.partition(" ")
+                arg = arg.strip()
 
-            if message_text == f"{bot_name} /help":
-                send_message(
-                    token,
-                    room_id,
-                    f"@{bot_name} /weather <city>\n@{bot_name} /iss\n@{bot_name} /help\n@{bot_name} /quit"
-                )
+                if cmd == "/help":
+                    send_message(token, room_id, f"@{bot_name} /weather <city>\n@{bot_name} /iss\n@{bot_name} /help\n@{bot_name} /quit")
 
-            elif message_text.startswith(f'{bot_name} /weather'):
-
-                parts = message_text.split('/weather', 1)
-
-                if len(parts[1]) == 0:
-                    send_message(token, room_id, "Usage: /weather <city>")
+                elif cmd == "/weather":
+                    if not arg:
+                        send_message(token, room_id, f"Usage @{bot_name} /weather <city>")
+                    else:
+                        send_message(token, room_id, get_weather(arg, weather_key))
+                elif cmd == "/iss":
+                    send_message(token, room_id, get_iss_location(weather_key))
+                elif cmd == "/quit":
+                    send_message(token, room_id, "AstroBot shutting down.")
+                    break
                 else:
-                    city = parts[1]
-                    send_message(token, room_id, get_weather(city.strip().lower(), weather_key))
-
-            elif message_text == f"{bot_name} /iss":
-                send_message(token, room_id, get_iss_location(weather_key))
-
-            elif message_text == f"{bot_name} /quit":
-                send_message(token, room_id, "AstroBot shutting down.")
-                break
-
-            else:
-                send_message(token, room_id, f"Unknown command. Use @{bot_name} /help")
+                    send_message(token, room_id, f"Unknown command. Use @{bot_name} /help")
 
         time.sleep(5)
 
