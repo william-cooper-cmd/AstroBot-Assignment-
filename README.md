@@ -9,76 +9,157 @@ This investigation sheet helps you gather key technical information from the thr
 
 ##  Webex Messaging API (4 marks)
 
-| Criteria                        | Details                                                                                                                     |
-|---------------------------------|-----------------------------------------------------------------------------------------------------------------------------|
-| API Base URL                    | `https://webexapis.com/v1/`                                                                                                 |
-| Authentication Method           | `BEARER TOKEN`                                                                                                              |
-| Endpoint to list rooms          | `/rooms`                                                                                                                    |
-| Endpoint to get messages        | `/messages?roomId=Y2lzY29zcGFyazovL3VybjpURUFNOmV1LWNlbnRyYWwtMV9rL1JPT00vYWU2YjgwYjAtYzIyNy0xMWYxLWJlYTYtYWYyOGU5ZDE3YjJm` |
-| Endpoint to send message        | `/messages`                                                                                                                 |
-| Required headers                | `BEARER TOKEN`                                                                                                              |
-| Sample full GET or POST request | `https://webexapis.com/v1/rooms`                                                                                            |
+| Criteria                              | HTTP Method | Endpoint / Details                        | Description                                         |
+|---------------------------------------|-------------|-------------------------------------------|-----------------------------------------------------|
+| API Base URL                          | —           | `https://webexapis.com/v1/`               | Base URL for the Webex REST API                     |
+| Authentication Method                 | —           | Bearer Token                              | Authenticates requests using an access token        |
+| Endpoint to list rooms                | GET         | `/rooms`                                  | Retrieves a list of rooms                           |
+| Endpoint to get messages              | GET         | `/messages?roomId=ROOM_ID`                | Retrieves messages from a specific room             |
+| Endpoint to send a message            | POST        | `/messages`                               | Sends a message to a specified room                 |
+| Required Headers                      | —           | `Authorization: Bearer YOUR_ACCESS_TOKEN` | Authenticates the API request                       |
+| Sample full GET request               | GET         | `https://webexapis.com/v1/rooms`          | Retrieves rooms available to the authenticated user |
+
+
+### Sample JSON Response (List Rooms)
+
+```json
+{
+    "items": [
+      {
+            "id": "Y2lzY29zcGFyazovL3VybjpURUFNOmV1LWNlbnRyYWwtMV9rL1JPT00vY2ExNjU1ZTAtY2Q4Mi0xMWYxLWExMWYtYmI5YWYwOGY5OTlk",
+            "title": "William Cooper",
+            "type": "direct",
+            "lastActivity": "2026-10-21T19:08:59.470Z",
+            "creatorId": "Y2lzY29zcGFyazovL3VzL1BFT1BMRS8xMGRhY2VkNi1iYjdhLTQ4NTEtODRjOS1mYjQyMjhkNTAyNzA",
+            "created": "2026-10-21T19:08:24.510Z",
+            "ownerId": "Y2lzY29zcGFyazovL3VzL09SR0FOSVpBVElPTi9jMThlMTNhZS01NTc1LTRiYzAtYWUwMS1lNDg5MDVmMTRmMTc",
+            "isPublic": false,
+            "isReadOnly": false,
+            "isLocked": false
+      }
+   ]
+}
+```
 
 ---
 
 ##  ISS Current Location API (2 marks)
 
-| Criteria                              | Details                        |
-|---------------------------------------|--------------------------------|
-| API Base URL                          | `	http://api.open-notify.org/` |
-| Endpoint for current ISS location     | `GET /iss-now.json`            |
-| Sample response format (example JSON) | '{                             |
+| Criteria                              | Details                       |
+|---------------------------------------|-------------------------------|
+| API Base URL                          | `http://api.open-notify.org/` |
+| Endpoint for current ISS location     | `GET /iss-now.json`           |
+| Sample response format (example JSON) | See below                     |
 
-    "message": "success",
-    "timestamp": 1791362217,
-    "iss_position": {
-        "longitude": "72.3341",
-        "latitude": "49.0602"
-    }
-}'
-```
+### Sample JSON Response
 
+```json
+{
+  "message": "success",
+  "timestamp": 1791362217,
+  "iss_position": {
+    "longitude": "72.3341",
+    "latitude": "49.0602"
+  }
+}
 ```
-|
 
 ---
 
-##  Geocoding API (4 marks)
+## Geocoding API (4 marks)
 
-| Criteria                                 | Details                                                                                                    |
-|------------------------------------------|------------------------------------------------------------------------------------------------------------|
-| Provider used (Choose one)               | **LocationIQ**                                                                                             |
-| API Base URL                             | `https://us1.locationiq.com/v1/`                                                                           |
-| Endpoint for geocoding                   | `/search`                                                                                                  |
-| Endpoint for reverse geocoding           | `/reverse`                                                                                                 |
-| Authentication method                    | `API Key`                                                                                                  |
-| Required query parameters                | `key, q, format=json`                                                                                      |
-| Sample request with latitude/longitude   | `GET https://us1.locationiq.com/v1/reverse?key=YOUR_ACCESS_TOKEN&lat=51.5233879&lon=-0.1582367&format=json |
-| Sample JSON response	See below`          |                                                                                                            |
-| Sample JSON response (formatted example) |                                                                                                            |
+| Criteria                         | Details                                                                                         |
+|----------------------------------|-------------------------------------------------------------------------------------------------|
+| Provider used (Choose one)       | **OpenWeatherMap**                                                                              |
+| API Base URL                     | `https://api.openweathermap.org/`                                                               |
+| Endpoint for geocoding           | `geo/1.0/direct`                                                                                |
+| Endpoint for reverse geocoding   | `geo/1.0/reverse`                                                                               |
+| Authentication method            | `API Key`                                                                                       |
+| Required query parameters        | `appid`, `q`, `lat`, `lon`                                                                      |
+| Sample forward geocoding request | `https://api.openweathermap.org/geo/1.0/direct?q=Zocca,IT&limit=1&appid=YOUR_API_KEY`           |
+| Sample reverse geocoding request | `https://api.openweathermap.org/geo/1.0/reverse?lat=44.34&lon=10.99&limit=1&appid=YOUR_API_KEY` |
+| Sample JSON response             | See below                                                                                       |
 
+### Sample JSON Response (Reverse Geocoding)
+
+```json
+[
+    {
+        "name": "Zocca",
+        "lat": 44.3472638,
+        "lon": 10.990407,
+        "country": "IT",
+        "state": "Emilia-Romagna"
+    }
+]
 ```
-
-```
-|
 
 ---
 
 
 ##  Weather API (3 marks)
 
-| Criteria | Details |
-|---------|---------|
-| API Provider (Choose one) | **OpenWeather, OpenWeatherMap (or other – provide details)** |
-| API Base URL | `_______________________________` |
-| Endpoint for current weather | `_______________________________` |
-| Authentication method | `_______________________________` |
-| Required query parameters | `_______________________________` |
-| Sample JSON response (formatted example) |  
+| Criteria                               | Details                                                                                               |
+|----------------------------------------|-------------------------------------------------------------------------------------------------------|
+| Provider used (Choose one)             | **OpenWeatherMap**                                                                                    |
+| API Base URL                           | `https://api.openweathermap.org/`                                                                     |
+| Endpoint for current weather           | `data/2.5/weather`                                                                                    |
+| Authentication method                  | `API Key`                                                                                             |
+| Required query parameters              | `appid`, `lat`, `lon`                                                                                 |
+| Sample request with latitude/longitude | `https://api.openweathermap.org/data/2.5/weather?lat=44.34&lon=10.99&appid=YOUR_API_KEY&units=metric` |
+| Sample JSON response                   | See below                                                                                             |
+
+### Sample JSON Response
+
+```json
+{
+  "coord": {
+    "lon": 10.99,
+    "lat": 44.34
+  },
+  "weather": [
+    {
+      "id": 803,
+      "main": "Clouds",
+      "description": "broken clouds",
+      "icon": "04d"
+    }
+  ],
+  "base": "stations",
+  "main": {
+    "temp": 14.59,
+    "feels_like": 13.83,
+    "temp_min": 12.34,
+    "temp_max": 14.59,
+    "pressure": 1019,
+    "humidity": 66,
+    "sea_level": 1019,
+    "grnd_level": 955
+  },
+  "visibility": 10000,
+  "wind": {
+    "speed": 2.48,
+    "deg": 254,
+    "gust": 6.76
+  },
+  "clouds": {
+    "all": 62
+  },
+  "dt": 1792754048,
+  "sys": {
+    "type": 2,
+    "id": 2044440,
+    "country": "IT",
+    "sunrise": 1792734043,
+    "sunset": 1792772386
+  },
+  "timezone": 7200,
+  "id": 3163858,
+  "name": "Zocca",
+  "cod": 200
+}
 ```
 
-```
-|
 
 ---
 
@@ -173,15 +254,6 @@ Reflect on your AstroBot (400 words):
 - What security risks did you identify and how were they handled?  
 - How could your solution be improved in the future?  
 
----
-
- **Tip:** Link your answers directly to your code and examples for higher marks.
-### Notes
-
-- Use official documentation for accuracy (e.g. developer.webex.com, locationiq.com or Mapbox, open-notify.org or other ISS API).
-- Be prepared to explain your findings to your instructor or demo how you retrieved them using tools like Postman, Curl, or Python scripts.
-
-/weather <'city'>
 ---
 
 ###  Total: /40
